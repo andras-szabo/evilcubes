@@ -16,19 +16,55 @@ public class TestMover : MonoWithCachedTransform
 	private float _previousJumpForce;
 	private float _previousJumpAngle;
 
+	private bool _flag;
+
 	private void Start()
 	{
-		//StartCoroutine(RollToSideRoutine());
+		StartCoroutine(JumpRoutine());
 	}
 
 	private void Update()
 	{
 		if (CachedTransform.hasChanged || !Mathf.Approximately(_previousJumpForce, jumpForce) || !Mathf.Approximately(_previousJumpAngle, jumpAngle))
 		{
-			_previousJumpForce = jumpForce;
-			_previousJumpAngle = jumpAngle;
+			if (!_flag)
+			{
+				_previousJumpForce = jumpForce;
+				_previousJumpAngle = jumpAngle;
 
-			CalculateTrajectory(jumpForce, jumpAngle);
+				CalculateTrajectory(jumpForce, jumpAngle);
+				_flag = true;
+			}
+		}
+	}
+
+	private IEnumerator JumpRoutine()
+	{
+		while (true)
+		{
+			var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(-jumpAngle, CachedTransform.right));
+			var initialVelocity = (rotation.MultiplyVector(CachedTransform.forward)).normalized * jumpForce;
+			var totalTime = -2f * initialVelocity.y / Physics.gravity.y;
+			var endPoint = CachedTransform.position + new Vector3(initialVelocity.x * totalTime, 0f, initialVelocity.z * totalTime);
+			var elapsed = 0f;
+			var startingPoint = CachedTransform.position;
+
+			while (elapsed < totalTime)
+			{
+				elapsed += Time.fixedDeltaTime;
+
+				var dx = initialVelocity.x * elapsed;
+				var dy = initialVelocity.y * elapsed + Physics.gravity.y * elapsed * elapsed / 2f;
+				var dz = initialVelocity.z * elapsed;
+
+				CachedTransform.position = startingPoint + new Vector3(dx, dy, dz);
+				meshToRotate.localRotation = Quaternion.Euler(90f * (elapsed / totalTime), 0f, 0f);
+				yield return null;
+			}
+
+			CachedTransform.position = endPoint;
+			_flag = false;
+			yield return null;
 		}
 	}
 
@@ -46,7 +82,7 @@ public class TestMover : MonoWithCachedTransform
 
 		for (int i = 0; i <= trajectoryMarkerCount; ++i)
 		{
-			var t = totalTime / trajectoryMarkerCount * i;
+			var t = (totalTime / trajectoryMarkerCount) * i;
 
 			var dx = initialVelocity.x * t;
 			var dy = initialVelocity.y * t + g * t * t / 2f;
