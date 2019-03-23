@@ -32,13 +32,13 @@ public class TestMover : MonoWithCachedTransform
 	{
 		while (true)
 		{
-			var left = true;
+			var left = false;
 			var halfSize = 0.5f;
 			var fromEdgeToCentre = left ? CachedTransform.right * halfSize : -CachedTransform.right * halfSize;
 			fromEdgeToCentre += new Vector3(0f, halfSize, 0f);
 
 			var axisToRotateAround = CachedTransform.forward;
-			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, 0.5f);
+			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, left ? 0.5f : -0.5f);
 			var anglesRotated = 0f;
 
 			while (anglesRotated < 90f)
