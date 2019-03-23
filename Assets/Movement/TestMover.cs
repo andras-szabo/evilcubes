@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(CubeAwareness))]
 public class TestMover : MonoWithCachedTransform
 {
+	public static float rollAngleSpeedPerFrame = 1f;
 	public Transform meshToRotate;
 
 	[Range(0f, 100f)]
@@ -21,8 +23,19 @@ public class TestMover : MonoWithCachedTransform
 
 	private bool _shouldNotRedrawTrajectory;
 
+	private CubeAwareness _cubeAwareness;
+	private CubeAwareness CubeAwareness
+	{
+		get
+		{
+			return _cubeAwareness ?? (_cubeAwareness = GetComponent<CubeAwareness>());
+		}
+	}
+
 	private void Start()
 	{
+		CubeAwareness.UpdatePath(new List<Vector3> { CachedTransform.position });
+
 		if (isJumper)
 		{
 			CalculateTrajectory(jumpForce, jumpAngle);
@@ -53,8 +66,14 @@ public class TestMover : MonoWithCachedTransform
 
 	private IEnumerator BunnyHopRoutine()
 	{
+		yield return new WaitForSeconds(0.5f);
+
 		while (true)
 		{
+			var path = trajectory.GetRange(1, trajectory.Count - 1);
+			yield return WaitUntilPathFreeRoutine(path, false);
+			CubeAwareness.UpdatePath(path);
+
 			var jAngle = _jumpForward ? -jumpAngle : 180f + jumpAngle;
 			var forward = CachedTransform.forward;
 
@@ -65,6 +84,9 @@ public class TestMover : MonoWithCachedTransform
 			var elapsed = 0f;
 			var startingPoint = CachedTransform.position;
 
+			var trajectorySectionCount = 16;
+			var timeForOneSection = totalTime / trajectorySectionCount;
+					   
 			while (elapsed < totalTime)
 			{
 				elapsed += Time.fixedDeltaTime;
@@ -75,12 +97,26 @@ public class TestMover : MonoWithCachedTransform
 
 				CachedTransform.position = startingPoint + new Vector3(dx, dy, dz);
 				meshToRotate.localRotation = Quaternion.Euler(90f * (_jumpForward ? 1f: -1f) * (elapsed / totalTime), 0f, 0f);
+
+				var elapsedTrajectorySections = (int) (elapsed / timeForOneSection);
+				if (elapsedTrajectorySections < 1)
+				{
+					elapsedTrajectorySections = 1;
+				}
+				var remaining = trajectorySectionCount - elapsedTrajectorySections;
+
+				CubeAwareness.UpdatePath(trajectory.GetRange(elapsedTrajectorySections, remaining));
+
 				yield return null;
 			}
 
 			CachedTransform.position = endPoint;
 			_jumpForward = !_jumpForward;
 			_shouldNotRedrawTrajectory = false;
+
+			//TODO
+			CubeAwareness.UpdatePath(new List<Vector3>());
+
 			yield return null;
 		}
 	}
@@ -99,7 +135,7 @@ public class TestMover : MonoWithCachedTransform
 		trajectory = new List<Vector3>();
 		var trajectoryMarkerCount = 16;
 
-		for (int i = 0; i <= trajectoryMarkerCount; ++i)
+		for (int i = 1; i <= trajectoryMarkerCount; ++i)
 		{
 			var t = (totalTime / trajectoryMarkerCount) * i;
 
@@ -138,14 +174,34 @@ public class TestMover : MonoWithCachedTransform
 		}
 	}
 
+	private IEnumerator WaitUntilPathFreeRoutine(IEnumerable<Vector3> path, bool log = false)
+	{
+		var checkInterval = new WaitForSeconds(0.1f);
+		while (!CubeAwareness.IsPathFree(path, 0.5f, log))
+		{
+			yield return checkInterval;
+		}
+	}
+
 	private IEnumerator RollForwardRoutine()
 	{
+		yield return new WaitForSeconds(0.2f);
+
 		while (true)
 		{
+			var path = new List<Vector3>
+			{
+				CachedTransform.position + CachedTransform.forward * 1f
+			};
+
+			yield return WaitUntilPathFreeRoutine(path);
+
+			CubeAwareness.UpdatePath(new List<Vector3> { path[0] });
+
 			var fromEdgeToCentre = new Vector3(0.0f, 0.5f, 0.0f) - CachedTransform.forward.normalized * 0.5f;
 			
 			var axisToRotateAround = CachedTransform.right;
-			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, 0.5f);
+			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, rollAngleSpeedPerFrame);
 			var anglesRotated = 0f;
 			
 			while (anglesRotated < 90f)
@@ -153,14 +209,17 @@ public class TestMover : MonoWithCachedTransform
 				var delta = CachedTransform.position - fromEdgeToCentre;
 				fromEdgeToCentre = matrix.MultiplyPoint3x4(fromEdgeToCentre);
 				CachedTransform.position = fromEdgeToCentre + delta;
-				anglesRotated += 0.5f;
+				anglesRotated += rollAngleSpeedPerFrame;
 
-				meshToRotate.Rotate(new Vector3(0.5f, 0f, 0f), Space.Self);
+				meshToRotate.Rotate(new Vector3(rollAngleSpeedPerFrame, 0f, 0f), Space.Self);
 
 				yield return null;
 			}
 
 			CachedTransform.position = new Vector3(CachedTransform.position.x, 0.5f, CachedTransform.position.z);
+
+			//TODO ---- formalized, nicely
+			CubeAwareness.UpdatePath(new List<Vector3>());
 		}
 	}
 
