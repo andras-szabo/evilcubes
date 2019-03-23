@@ -19,12 +19,15 @@ public class TestMover : MonoWithCachedTransform
 	private float _previousJumpAngle;
 	private bool _jumpForward = true;
 
-	private bool _redrawTrajectoryFlag;
+	private bool _shouldNotRedrawTrajectory;
 
 	private void Start()
 	{
 		if (isJumper)
 		{
+			CalculateTrajectory(jumpForce, jumpAngle);
+			_shouldNotRedrawTrajectory = true;
+
 			StartCoroutine(BunnyHopRoutine());
 		}
 		else
@@ -37,13 +40,13 @@ public class TestMover : MonoWithCachedTransform
 	{
 		if (CachedTransform.hasChanged || !Mathf.Approximately(_previousJumpForce, jumpForce) || !Mathf.Approximately(_previousJumpAngle, jumpAngle))
 		{
-			if (!_redrawTrajectoryFlag && isJumper)
+			if (!_shouldNotRedrawTrajectory && isJumper)
 			{
 				_previousJumpForce = jumpForce;
 				_previousJumpAngle = jumpAngle;
 
 				CalculateTrajectory(jumpForce, jumpAngle);
-				_redrawTrajectoryFlag = true;
+				_shouldNotRedrawTrajectory = true;
 			}
 		}
 	}
@@ -77,7 +80,7 @@ public class TestMover : MonoWithCachedTransform
 
 			CachedTransform.position = endPoint;
 			_jumpForward = !_jumpForward;
-			_redrawTrajectoryFlag = false;
+			_shouldNotRedrawTrajectory = false;
 			yield return null;
 		}
 	}
@@ -86,12 +89,9 @@ public class TestMover : MonoWithCachedTransform
 	{
 		var g = Physics.gravity.y;
 
-		if (!_jumpForward)
-		{
-			jAngle *= -1f;
-		}
+		jAngle = _jumpForward ? -jumpAngle : 180f + jumpAngle;
 
-		var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(-jAngle, CachedTransform.right));
+		var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(jAngle, CachedTransform.right));
 		var initialVelocity = (rotation.MultiplyVector(CachedTransform.forward)).normalized * jForce;
 
 		var totalTime = -2f * initialVelocity.y / g;
