@@ -12,28 +12,37 @@ public class TestMover : MonoWithCachedTransform
 	[Range(10f, 90f)]
 	public float jumpAngle = 45f;
 
+	public bool isJumper = false;
+
 	private List<Vector3> trajectory = new List<Vector3>();
 	private float _previousJumpForce;
 	private float _previousJumpAngle;
 
-	private bool _flag;
+	private bool _redrawTrajectoryFlag;
 
 	private void Start()
 	{
-		StartCoroutine(BunnyHopRoutine());
+		if (isJumper)
+		{
+			StartCoroutine(BunnyHopRoutine());
+		}
+		else
+		{
+			StartCoroutine(RollForwardRoutine());
+		}
 	}
 
 	private void Update()
 	{
 		if (CachedTransform.hasChanged || !Mathf.Approximately(_previousJumpForce, jumpForce) || !Mathf.Approximately(_previousJumpAngle, jumpAngle))
 		{
-			if (!_flag)
+			if (!_redrawTrajectoryFlag && isJumper)
 			{
 				_previousJumpForce = jumpForce;
 				_previousJumpAngle = jumpAngle;
 
 				CalculateTrajectory(jumpForce, jumpAngle);
-				_flag = true;
+				_redrawTrajectoryFlag = true;
 			}
 		}
 	}
@@ -63,7 +72,8 @@ public class TestMover : MonoWithCachedTransform
 			}
 
 			CachedTransform.position = endPoint;
-			_flag = false;
+			CachedTransform.Rotate(new Vector3(0f, 180f, 0f), Space.World);
+			_redrawTrajectoryFlag = false;
 			yield return null;
 		}
 	}
@@ -92,7 +102,7 @@ public class TestMover : MonoWithCachedTransform
 		}
 	}
 
-	private IEnumerator RollForwardRoutine()
+	private IEnumerator RollSidewaysRoutine()
 	{
 		while (true)
 		{
@@ -119,7 +129,7 @@ public class TestMover : MonoWithCachedTransform
 		}
 	}
 
-	private IEnumerator TestRoutine2()
+	private IEnumerator RollForwardRoutine()
 	{
 		while (true)
 		{
