@@ -17,6 +17,7 @@ public class TestMover : MonoWithCachedTransform
 	private List<Vector3> trajectory = new List<Vector3>();
 	private float _previousJumpForce;
 	private float _previousJumpAngle;
+	private bool _jumpForward = true;
 
 	private bool _redrawTrajectoryFlag;
 
@@ -51,8 +52,11 @@ public class TestMover : MonoWithCachedTransform
 	{
 		while (true)
 		{
-			var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(-jumpAngle, CachedTransform.right));
-			var initialVelocity = (rotation.MultiplyVector(CachedTransform.forward)).normalized * jumpForce;
+			var jAngle = _jumpForward ? -jumpAngle : 180f + jumpAngle;
+			var forward = CachedTransform.forward;
+
+			var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(jAngle, CachedTransform.right));
+			var initialVelocity = rotation.MultiplyVector(forward).normalized * jumpForce;
 			var totalTime = -2f * initialVelocity.y / Physics.gravity.y;
 			var endPoint = CachedTransform.position + new Vector3(initialVelocity.x * totalTime, 0f, initialVelocity.z * totalTime);
 			var elapsed = 0f;
@@ -67,23 +71,28 @@ public class TestMover : MonoWithCachedTransform
 				var dz = initialVelocity.z * elapsed;
 
 				CachedTransform.position = startingPoint + new Vector3(dx, dy, dz);
-				meshToRotate.localRotation = Quaternion.Euler(90f * (elapsed / totalTime), 0f, 0f);
+				meshToRotate.localRotation = Quaternion.Euler(90f * (_jumpForward ? 1f: -1f) * (elapsed / totalTime), 0f, 0f);
 				yield return null;
 			}
 
 			CachedTransform.position = endPoint;
-			CachedTransform.Rotate(new Vector3(0f, 180f, 0f), Space.World);
+			_jumpForward = !_jumpForward;
 			_redrawTrajectoryFlag = false;
 			yield return null;
 		}
 	}
 
-	private void CalculateTrajectory(float jumpForce, float jumpAngle)
+	private void CalculateTrajectory(float jForce, float jAngle)
 	{
 		var g = Physics.gravity.y;
 
-		var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(-jumpAngle, CachedTransform.right));
-		var initialVelocity = (rotation.MultiplyVector(CachedTransform.forward)).normalized * jumpForce;
+		if (!_jumpForward)
+		{
+			jAngle *= -1f;
+		}
+
+		var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(-jAngle, CachedTransform.right));
+		var initialVelocity = (rotation.MultiplyVector(CachedTransform.forward)).normalized * jForce;
 
 		var totalTime = -2f * initialVelocity.y / g;
 
