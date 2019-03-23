@@ -7,7 +7,7 @@ public class TestMover : MonoWithCachedTransform
 
 	private void Start()
 	{
-		StartCoroutine(TestRoutine2());
+		StartCoroutine(RollToSideRoutine());
 	}
 
 	private IEnumerator TestRoutine()
@@ -28,6 +28,33 @@ public class TestMover : MonoWithCachedTransform
 		}
 	}
 
+	private IEnumerator RollToSideRoutine()
+	{
+		while (true)
+		{
+			var left = true;
+			var halfSize = 0.5f;
+			var fromEdgeToCentre = left ? CachedTransform.right * halfSize : -CachedTransform.right * halfSize;
+			fromEdgeToCentre += new Vector3(0f, halfSize, 0f);
+
+			var axisToRotateAround = CachedTransform.forward;
+			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, 0.5f);
+			var anglesRotated = 0f;
+
+			while (anglesRotated < 90f)
+			{
+				var delta = CachedTransform.position - fromEdgeToCentre;
+				fromEdgeToCentre = matrix.MultiplyPoint3x4(fromEdgeToCentre);
+				CachedTransform.position = fromEdgeToCentre + delta;
+				anglesRotated += 0.5f;
+				meshToRotate.Rotate(new Vector3(0f, 0f, left ? 0.5f : -0.5f), Space.Self);
+				yield return null;
+			}
+
+			CachedTransform.position = new Vector3(CachedTransform.position.x, 0.5f, CachedTransform.position.z);
+		}
+	}
+
 	private IEnumerator TestRoutine2()
 	{
 		while (true)
@@ -35,8 +62,6 @@ public class TestMover : MonoWithCachedTransform
 			var fromEdgeToCentre = new Vector3(0.0f, 0.5f, 0.0f) - CachedTransform.forward.normalized * 0.5f;
 			
 			var axisToRotateAround = CachedTransform.right;
-			var pointOnAxis = (CachedTransform.position - fromEdgeToCentre + axisToRotateAround).normalized;
-
 			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, 0.5f);
 			var anglesRotated = 0f;
 			
