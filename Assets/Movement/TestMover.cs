@@ -20,7 +20,7 @@ public class TestMover : MonoWithCachedTransform
 
 	private void Start()
 	{
-		StartCoroutine(JumpRoutine());
+		StartCoroutine(BunnyHopRoutine());
 	}
 
 	private void Update()
@@ -38,7 +38,7 @@ public class TestMover : MonoWithCachedTransform
 		}
 	}
 
-	private IEnumerator JumpRoutine()
+	private IEnumerator BunnyHopRoutine()
 	{
 		while (true)
 		{
@@ -92,25 +92,7 @@ public class TestMover : MonoWithCachedTransform
 		}
 	}
 
-	private IEnumerator TestRoutine()
-	{
-		while (true)
-		{
-			var axisToRotateAround = CachedTransform.right;
-			var pointOnAxis = CachedTransform.position + new Vector3(0f, -0.5f, 0.5f);
-			var anglesRotated = 0.0f;
-			while (anglesRotated < 90f)
-			{
-				CachedTransform.RotateAround(pointOnAxis, CachedTransform.right, 0.5f);
-				anglesRotated += 0.5f;
-				yield return null;
-			}
-
-			CachedTransform.position = new Vector3(CachedTransform.position.x, 0.5f, CachedTransform.position.z);
-		}
-	}
-
-	private IEnumerator RollToSideRoutine()
+	private IEnumerator RollForwardRoutine()
 	{
 		while (true)
 		{
