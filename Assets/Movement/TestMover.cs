@@ -1,13 +1,59 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class TestMover : MonoWithCachedTransform
 {
 	public Transform meshToRotate;
 
+	[Range(0f, 100f)]
+	public float jumpForce = 10f;
+
+	[Range(10f, 90f)]
+	public float jumpAngle = 45f;
+
+	private List<Vector3> trajectory = new List<Vector3>();
+	private float _previousJumpForce;
+	private float _previousJumpAngle;
+
 	private void Start()
 	{
-		StartCoroutine(RollToSideRoutine());
+		//StartCoroutine(RollToSideRoutine());
+	}
+
+	private void Update()
+	{
+		if (CachedTransform.hasChanged || !Mathf.Approximately(_previousJumpForce, jumpForce) || !Mathf.Approximately(_previousJumpAngle, jumpAngle))
+		{
+			_previousJumpForce = jumpForce;
+			_previousJumpAngle = jumpAngle;
+
+			CalculateTrajectory(jumpForce, jumpAngle);
+		}
+	}
+
+	private void CalculateTrajectory(float jumpForce, float jumpAngle)
+	{
+		var g = Physics.gravity.y;
+
+		var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(-jumpAngle, CachedTransform.right));
+		var initialVelocity = (rotation.MultiplyVector(CachedTransform.forward)).normalized * jumpForce;
+
+		var totalTime = -2f * initialVelocity.y / g;
+
+		trajectory = new List<Vector3>();
+		var trajectoryMarkerCount = 16;
+
+		for (int i = 0; i <= trajectoryMarkerCount; ++i)
+		{
+			var t = totalTime / trajectoryMarkerCount * i;
+
+			var dx = initialVelocity.x * t;
+			var dy = initialVelocity.y * t + g * t * t / 2f;
+			var dz = initialVelocity.z * t;
+
+			trajectory.Add(CachedTransform.position + new Vector3(dx, dy, dz));
+		}
 	}
 
 	private IEnumerator TestRoutine()
@@ -85,8 +131,16 @@ public class TestMover : MonoWithCachedTransform
 	{
 		if (Application.isPlaying)
 		{
-			Gizmos.color = Color.blue;
-			Gizmos.DrawSphere(CachedTransform.position, 0.1f);
+			DrawTrajectory();
+		}
+	}
+
+	private void DrawTrajectory()
+	{
+		Gizmos.color = Color.blue;
+		foreach (var pos in trajectory)
+		{
+			Gizmos.DrawSphere(pos, 0.2f);
 		}
 	}
 
