@@ -28,6 +28,16 @@ public class CubeAwareness : MonoWithCachedTransform, ICollidable
 		}
 	}
 
+	public void UpdateSize(float awarenessRadius, float maxStepDistance)
+	{
+		_mySize = awarenessRadius;
+		var sphereCollider = GetComponent<Collider>() as SphereCollider;
+		if (sphereCollider != null)
+		{
+			sphereCollider.radius = maxStepDistance * 2.25f;
+		}
+	}
+
 	//TODO NOTE _myPath should not include current position,
 	//		it's the path where I'm going to
 	public void UpdatePath(List<Vector3> path)
@@ -35,21 +45,21 @@ public class CubeAwareness : MonoWithCachedTransform, ICollidable
 		_myPath = path;
 	}
 
-	public bool IsPathFree(IEnumerable<Vector3> path, float cubeSize, bool log)
+	public bool IsPathFree(IEnumerable<Vector3> path, float mySize, bool log)
 	{
-		if (log)
+		if (log && L)
 		{
 			Debug.LogWarning("----");
 		}
 
-		foreach (var cube in _otherCubesNearby)
+		foreach (var otherCube in _otherCubesNearby)
 		{
-			if (log)
+			if (log && L)
 			{
-				Debug.LogWarning(cube.gameObject.name);
+				Debug.LogWarning(otherCube.gameObject.name);
 			}
 
-			if (cube.OverlapsAnyPosition(path, cubeSize))
+			if (otherCube.OverlapsAnyPosition(path, mySize))
 			{
 				return false;
 			}
@@ -58,20 +68,20 @@ public class CubeAwareness : MonoWithCachedTransform, ICollidable
 		return true;
 	}
 
-	public bool OverlapsAnyPosition(IEnumerable<Vector3> positions, float cubeSize)
+	public bool OverlapsAnyPosition(IEnumerable<Vector3> positions, float otherCubeSize)
 	{
-		var distanceLimitSquared = (cubeSize + _mySize) * (cubeSize + _mySize);
+		var distanceLimitSquared = Mathf.Pow(otherCubeSize + _mySize, 2f);
 
 		foreach (var pos in positions)
 		{
-			if (Vector3.SqrMagnitude(CachedTransform.position - pos) < distanceLimitSquared)
+			if (Vector3.SqrMagnitude(CachedTransform.position - pos) <= distanceLimitSquared)
 			{
 				return true;
 			}
 
 			foreach (var pathPoint in _myPath)
 			{
-				if (Vector3.SqrMagnitude(pathPoint - pos) < distanceLimitSquared)
+				if (Vector3.SqrMagnitude(pathPoint - pos) <= distanceLimitSquared)
 				{
 					return true;
 				}
