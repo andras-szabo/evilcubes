@@ -62,7 +62,6 @@ public class HUD : MonoBehaviour
 
 	private void HandleDispersionChanged(float currentDispersionDegrees)
 	{
-		Debug.LogWarning(currentDispersionDegrees);
 		var scaleFactor = Mathf.Lerp(CROSSHAIR_MIN_SCALE, CROSSHAIR_MAX_SCALE, currentDispersionDegrees / WeaponController.MAX_DISPERSION_DEGREE);
 		crosshair.localScale = new Vector3(scaleFactor, scaleFactor, 1f);
 	}
