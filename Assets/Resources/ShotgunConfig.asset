@@ -14,8 +14,8 @@ MonoBehaviour:
   id: shotgun
   isAutomatic: 0
   coolDownSeconds: 1
-  range: 50
-  damagePerProjectile: 20
+  range: 60
+  damagePerProjectile: 120
   dmgReductionRate: 0.1
   projectileCountPerShot: 25
   dispersionDegrees: 15

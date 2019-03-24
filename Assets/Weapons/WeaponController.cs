@@ -120,10 +120,7 @@ public class WeaponController : MonoWithCachedTransform
 			var hit = _hitsByDistance.Values[i];
 			_hitManager.ReportHit(hit.collider.gameObject, hit.point, damage);
 			damage = (int) (damage * (1f - config.dmgReductionRate));
-			Debug.Log(damage);
 		}
-
-		Debug.Log("---");
 	}
 
 	private void ResetDispersionRate()
