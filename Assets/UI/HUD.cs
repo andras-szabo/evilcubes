@@ -4,8 +4,12 @@ using UnityEngine.UI;
 
 public class HUD : MonoBehaviour
 {
+	public const float CROSSHAIR_MIN_SCALE = 0.1f;
+	public const float CROSSHAIR_MAX_SCALE = 2f;
+
 	public Text activeWeaponLabel;
 	public Image activeWeaponCooldown;
+	public RectTransform crosshair;
 
 	private PlayerController _player;
 	private WeaponController.WeaponState _weaponState;
@@ -38,6 +42,7 @@ public class HUD : MonoBehaviour
 		if (_player != null)
 		{
 			_player.weaponController.OnWeaponChanged -= HandleWeaponChanged;
+			_player.weaponController.OnDispersionChanged -= HandleDispersionChanged;
 		}
 	}
 
@@ -45,11 +50,21 @@ public class HUD : MonoBehaviour
 	{
 		if (_player != null)
 		{
-			HandleWeaponChanged(_player.weaponController.CurrentWeaponState);
-			_player.weaponController.OnWeaponChanged += HandleWeaponChanged;
+			var wc = _player.weaponController;
+			HandleWeaponChanged(wc.CurrentWeaponState);
+			HandleDispersionChanged(wc.CurrentWeaponState.currentDispersionDegrees);
+			wc.OnWeaponChanged += HandleWeaponChanged;
+			wc.OnDispersionChanged += HandleDispersionChanged;
 		}
 
 		_isSetup = true;
+	}
+
+	private void HandleDispersionChanged(float currentDispersionDegrees)
+	{
+		Debug.LogWarning(currentDispersionDegrees);
+		var scaleFactor = Mathf.Lerp(CROSSHAIR_MIN_SCALE, CROSSHAIR_MAX_SCALE, currentDispersionDegrees / WeaponController.MAX_DISPERSION_DEGREE);
+		crosshair.localScale = new Vector3(scaleFactor, scaleFactor, 1f);
 	}
 
 	private void HandleWeaponChanged(WeaponController.WeaponState weaponState)

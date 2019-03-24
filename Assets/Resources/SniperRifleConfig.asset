@@ -19,4 +19,4 @@ MonoBehaviour:
   dmgReductionRate: 0
   projectileCountPerShot: 1
   dispersionDegrees: 0.01
-  dispersionIncrementOverTime: 1.5
+  dispersionIncrementOverTime: 400

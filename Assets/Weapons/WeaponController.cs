@@ -1,19 +1,23 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class WeaponController : MonoWithCachedTransform
 {
 	public class WeaponState
 	{
-		public WeaponState(string name, float cooldown)
+		public WeaponState(WeaponConfig config)
 		{
-			this.name = name;
-			this.cooldown = cooldown;
+			name = config.id;
+			cooldown = config.coolDownSeconds;
+			elapsedSinceLastShot = float.MaxValue;
+			currentDispersionDegrees = config.dispersionDegrees;
 		}
 
 		readonly public string name;
 		readonly public float cooldown;
 
+		public bool isActive;
 		public float elapsedSinceLastShot;
 		public float currentDispersionDegrees;
 	}
@@ -22,6 +26,7 @@ public class WeaponController : MonoWithCachedTransform
 	public const float MAX_DISPERSION_DEGREE = 15f;
 
 	public event System.Action<WeaponState> OnWeaponChanged;
+	public event System.Action<float> OnDispersionChanged;
 
 	public WeaponConfig[] configs;
 
@@ -52,7 +57,7 @@ public class WeaponController : MonoWithCachedTransform
 		_weaponStates = new WeaponState[configs.Length];
 		for (int i = 0; i < configs.Length; ++i)
 		{
-			_weaponStates[i] = new WeaponState(configs[i].id, configs[i].coolDownSeconds);
+			_weaponStates[i] = new WeaponState(configs[i]);
 		}
 
 		SetActiveWeapon(0);
@@ -75,14 +80,18 @@ public class WeaponController : MonoWithCachedTransform
 	{
 		if (index > -1 && index < configs.Length)
 		{
+			if (_activeWeaponState != null)
+			{
+				_activeWeaponState.isActive = false;
+			}
+
 			_activeConfigIndex = index;
 			_activeConfig = configs[_activeConfigIndex];
 			_activeWeaponState = _weaponStates[_activeConfigIndex];
+			_activeWeaponState.isActive = true;
+
 			ResetActiveWeaponDispersionRate();
-
 			OnWeaponChanged?.Invoke(_activeWeaponState);
-
-			Debug.Log("Set active weapon: " + _activeConfig.id);			
 		}
 	}
 
@@ -99,7 +108,18 @@ public class WeaponController : MonoWithCachedTransform
 
 	public void HandleTriggerPull()
 	{
-		TryShoot();
+		if (TryShoot())
+		{
+			if (_activeConfig.isAutomatic)
+			{
+				IncreaseDispersionRate();
+			}
+			else
+			{
+				StartCoroutine(SimulateRecoilDispersionRoutine(_activeWeaponState, _activeConfig.dispersionDegrees, 
+															   _activeConfig.coolDownSeconds, simulateRecoil: true));
+			}
+		}
 	}
 
 	public void HandleTriggerHeld()
@@ -115,7 +135,11 @@ public class WeaponController : MonoWithCachedTransform
 
 	public void HandleTriggerLetGo()
 	{
-		ResetActiveWeaponDispersionRate();
+		if (_activeConfig.isAutomatic)
+		{
+			StartCoroutine(SimulateRecoilDispersionRoutine(_activeWeaponState, _activeConfig.dispersionDegrees,
+														   _activeConfig.coolDownSeconds, false));
+		}
 	}
 
 	private bool TryShoot()
@@ -191,12 +215,32 @@ public class WeaponController : MonoWithCachedTransform
 	private void ResetActiveWeaponDispersionRate()
 	{
 		_activeWeaponState.currentDispersionDegrees = _activeConfig.dispersionDegrees;
+		OnDispersionChanged?.Invoke(_activeWeaponState.currentDispersionDegrees);
+	}
+
+	private IEnumerator SimulateRecoilDispersionRoutine(WeaponState weaponState, float targetDispersionAmount,
+														float duration, bool simulateRecoil)
+	{
+		var startDispersionAmount = simulateRecoil ? MAX_DISPERSION_DEGREE : weaponState.currentDispersionDegrees;
+		var elapsed = 0f;
+		while (elapsed < duration && duration > 0f)
+		{
+			elapsed += Time.deltaTime;
+			weaponState.currentDispersionDegrees = Mathf.Lerp(startDispersionAmount, targetDispersionAmount, elapsed / duration);
+			if (weaponState.isActive)
+			{
+				OnDispersionChanged?.Invoke(weaponState.currentDispersionDegrees);
+			}
+			yield return null;
+		}
+		weaponState.currentDispersionDegrees = targetDispersionAmount;
 	}
 
 	private void IncreaseDispersionRate()
 	{
 		_activeWeaponState.currentDispersionDegrees = Mathf.Min(MAX_DISPERSION_DEGREE, 
 									_activeConfig.dispersionIncrementOverTime * _activeWeaponState.currentDispersionDegrees);
+		OnDispersionChanged?.Invoke(_activeWeaponState.currentDispersionDegrees);
 	}
 
 	private void OnDrawGizmos()
