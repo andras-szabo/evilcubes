@@ -11,11 +11,14 @@ public class WeaponController : MonoWithCachedTransform
 	private float _elapsedSecondsSinceLastShot = float.MaxValue;
 	private float _currentDispersionDegrees;
 	private RaycastHit[] _hits = new RaycastHit[MAX_HIT_PER_SHOT];
+	private SortedList<float, RaycastHit> _hitsByDistance = new SortedList<float, RaycastHit>(); 
 
 	private List<Vector3> _projectileRays = new List<Vector3>();
+	private int _enemyLayerMask;
 
 	private void Awake()
 	{
+		_enemyLayerMask = LayerMask.GetMask("EvilCubes");
 		HandleTriggerLetGo();
 	}
 
@@ -38,6 +41,11 @@ public class WeaponController : MonoWithCachedTransform
 				IncreaseDispersionRate();
 			}
 		}
+	}
+
+	public void HandleTriggerLetGo()
+	{
+		ResetDispersionRate();
 	}
 
 	private bool TryShoot()
@@ -64,10 +72,11 @@ public class WeaponController : MonoWithCachedTransform
 
 			_projectileRays.Add(origin + aimDirection);
 
-			var hitCount = Physics.RaycastNonAlloc(origin: origin, direction: aimDirection, results: _hits, maxDistance: config.range);
+			var hitCount = Physics.RaycastNonAlloc(origin: origin, direction: aimDirection, results: _hits, maxDistance: config.range,
+												   layerMask: _enemyLayerMask);
 			if (hitCount > 0)
 			{
-				ProcessHits();
+				ProcessHits(hitCount);
 			}
 		}
 		return true;
@@ -89,14 +98,25 @@ public class WeaponController : MonoWithCachedTransform
 		}
 	}
 
-	private void ProcessHits()
+	private void ProcessHits(int hitCount)
 	{
-		//TODO
-	}
+		_hitsByDistance.Clear();
 
-	public void HandleTriggerLetGo()
-	{
-		ResetDispersionRate();
+		for (int i = 0; i < hitCount; ++i)
+		{
+			_hitsByDistance.Add(_hits[i].distance, _hits[i]);
+		}
+
+		var damage = config.damagePerProjectile;
+
+		for (int i = 0; i < _hitsByDistance.Count && damage > 0.1f; ++i)
+		{
+			var hit = _hitsByDistance.Values[i];
+			var go = hit.collider.gameObject;
+			var hitPosition = hit.point;
+			//collisionManager.ReportHit(go, hitPosition, damage);
+			damage *= (1f - config.dmgReductionRate);	
+		}
 	}
 
 	private void ResetDispersionRate()
