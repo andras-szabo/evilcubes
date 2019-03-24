@@ -54,6 +54,8 @@ public class CameraRotator : MonoWithCachedTransform
 		var elapsedSeconds = 0f;
 		var duration = animate ? perspectiveSwitchDurationSeconds : 0f;
 
+		_currentViewPos = newPosition;
+
 		while (elapsedSeconds < duration && duration > 0f)
 		{
 			elapsedSeconds += Time.deltaTime;
@@ -62,7 +64,6 @@ public class CameraRotator : MonoWithCachedTransform
 		}
 
 		CachedTransform.localPosition = targetPosition;
-		_currentViewPos = newPosition;
 
 		_perspectiveSwitchRoutine = null;
 	}
