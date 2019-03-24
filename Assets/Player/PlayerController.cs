@@ -36,6 +36,14 @@ public class PlayerController : MonoBehaviour
 		{
 			weaponController.HandleTriggerLetGo();
 		}
+		else
+		{
+			var mouseWheel = Input.GetAxis("Mouse ScrollWheel");
+			if (!Mathf.Approximately(mouseWheel, 0f))
+			{
+				weaponController.CycleThroughWeapons(mouseWheel > 0f);
+			}
+		}
 	}
 
 	private void ProcessCamPerspectiveSwitchInput()

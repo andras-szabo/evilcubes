@@ -3,13 +3,22 @@ using UnityEngine;
 
 public class WeaponController : MonoWithCachedTransform
 {
+	private class WeaponState
+	{
+		public float elapsedSinceLastShot;
+		public float currentDispersionDegrees;
+	}
+
 	public const int MAX_HIT_PER_SHOT = 256;
 	public const float MAX_DISPERSION_DEGREE = 15f;
 
-	public WeaponConfig config;
+	public WeaponConfig[] configs;
 
-	private float _elapsedSecondsSinceLastShot = float.MaxValue;
-	private float _currentDispersionDegrees;
+	private WeaponConfig _activeConfig;
+	private int _activeConfigIndex;
+	private WeaponState _activeWeaponState;
+	private WeaponState[] _weaponStates;
+
 	private RaycastHit[] _hits = new RaycastHit[MAX_HIT_PER_SHOT];
 	private SortedList<float, RaycastHit> _hitsByDistance = new SortedList<float, RaycastHit>(); 
 
@@ -20,7 +29,14 @@ public class WeaponController : MonoWithCachedTransform
 	private void Awake()
 	{
 		_enemyLayerMask = LayerMask.GetMask("EvilCubes");
-		HandleTriggerLetGo();
+		
+		_weaponStates = new WeaponState[configs.Length];
+		for (int i = 0; i < configs.Length; ++i)
+		{
+			_weaponStates[i] = new WeaponState();
+		}
+
+		SetActiveWeapon(0);
 	}
 
 	private void Start()
@@ -30,7 +46,34 @@ public class WeaponController : MonoWithCachedTransform
 
 	private void LateUpdate()
 	{
-		_elapsedSecondsSinceLastShot += Time.deltaTime;
+		foreach (var weaponState in _weaponStates)
+		{
+			weaponState.elapsedSinceLastShot += Time.deltaTime;
+		}
+	}
+
+	public void SetActiveWeapon(int index)
+	{
+		if (index > -1 && index < configs.Length)
+		{
+			_activeConfigIndex = index;
+			_activeConfig = configs[_activeConfigIndex];
+			_activeWeaponState = _weaponStates[_activeConfigIndex];
+			ResetActiveWeaponDispersionRate();
+
+			Debug.Log("Set active weapon: " + _activeConfig.id);			
+		}
+	}
+
+	public void CycleThroughWeapons(bool cycleUp)
+	{
+		var delta = cycleUp ? 1 : -1;
+
+		_activeConfigIndex += delta;
+		if (_activeConfigIndex < 0) { _activeConfigIndex = configs.Length - 1; }
+		else { _activeConfigIndex %= configs.Length; }
+
+		SetActiveWeapon(_activeConfigIndex);
 	}
 
 	public void HandleTriggerPull()
@@ -40,7 +83,7 @@ public class WeaponController : MonoWithCachedTransform
 
 	public void HandleTriggerHeld()
 	{
-		if (config.isAutomatic)
+		if (_activeConfig.isAutomatic)
 		{
 			if (TryShoot())
 			{
@@ -51,22 +94,22 @@ public class WeaponController : MonoWithCachedTransform
 
 	public void HandleTriggerLetGo()
 	{
-		ResetDispersionRate();
+		ResetActiveWeaponDispersionRate();
 	}
 
 	private bool TryShoot()
 	{
-		if (_elapsedSecondsSinceLastShot < config.coolDownSeconds)
+		if (_activeWeaponState.elapsedSinceLastShot < _activeConfig.coolDownSeconds)
 		{
 			return false;
 		}
 
-		_elapsedSecondsSinceLastShot = 0f;
+		_activeWeaponState.elapsedSinceLastShot = 0f;
 		_projectileRays.Clear();
 
 		var origin = CachedTransform.position;
 
-		for (int i = 0; i < config.projectileCountPerShot; ++i)
+		for (int i = 0; i < _activeConfig.projectileCountPerShot; ++i)
 		{
 			var hDisplacement = 0f;
 			var vDisplacement = 0f;
@@ -78,7 +121,7 @@ public class WeaponController : MonoWithCachedTransform
 
 			_projectileRays.Add(origin + aimDirection);
 
-			var hitCount = Physics.RaycastNonAlloc(origin: origin, direction: aimDirection, results: _hits, maxDistance: config.range,
+			var hitCount = Physics.RaycastNonAlloc(origin: origin, direction: aimDirection, results: _hits, maxDistance: _activeConfig.range,
 												   layerMask: _enemyLayerMask);
 			if (hitCount > 0)
 			{
@@ -90,8 +133,9 @@ public class WeaponController : MonoWithCachedTransform
 
 	private void CalculateBulletDisplacementAtUnitDistance(ref float hDisplacement, ref float vDisplacement)
 	{
-		var horizontalDispersion = Random.Range(-_currentDispersionDegrees, _currentDispersionDegrees);
-		var verticalDispersion = Random.Range(-_currentDispersionDegrees, _currentDispersionDegrees);
+		var currentDispersionDegrees = _activeWeaponState.currentDispersionDegrees;
+		var horizontalDispersion = Random.Range(-currentDispersionDegrees, currentDispersionDegrees);
+		var verticalDispersion = Random.Range(-currentDispersionDegrees, currentDispersionDegrees);
 
 		if (!Mathf.Approximately(horizontalDispersion, 0f))
 		{
@@ -113,24 +157,25 @@ public class WeaponController : MonoWithCachedTransform
 			_hitsByDistance.Add(_hits[i].distance, _hits[i]);
 		}
 
-		var damage = config.damagePerProjectile;
+		var damage = _activeConfig.damagePerProjectile;
 
 		for (int i = 0; i < _hitsByDistance.Count && damage > 0.1f; ++i)
 		{
 			var hit = _hitsByDistance.Values[i];
 			_hitManager.ReportHit(hit.collider.gameObject, hit.point, damage);
-			damage = (int) (damage * (1f - config.dmgReductionRate));
+			damage = (int) (damage * (1f - _activeConfig.dmgReductionRate));
 		}
 	}
 
-	private void ResetDispersionRate()
+	private void ResetActiveWeaponDispersionRate()
 	{
-		_currentDispersionDegrees = config.dispersionDegrees;
+		_activeWeaponState.currentDispersionDegrees = _activeConfig.dispersionDegrees;
 	}
 
 	private void IncreaseDispersionRate()
 	{
-		_currentDispersionDegrees = Mathf.Min(MAX_DISPERSION_DEGREE, config.dispersionIncrementOverTime * _currentDispersionDegrees);
+		_activeWeaponState.currentDispersionDegrees = Mathf.Min(MAX_DISPERSION_DEGREE, 
+									_activeConfig.dispersionIncrementOverTime * _activeWeaponState.currentDispersionDegrees);
 	}
 
 	private void OnDrawGizmos()
@@ -141,7 +186,7 @@ public class WeaponController : MonoWithCachedTransform
 			foreach (var pos in _projectileRays)
 			{
 				var dir = (pos - CachedTransform.position).normalized;
-				Gizmos.DrawRay(CachedTransform.position, CachedTransform.position + dir * config.range);
+				Gizmos.DrawRay(CachedTransform.position, CachedTransform.position + dir * _activeConfig.range);
 			}
 		}
 	}
