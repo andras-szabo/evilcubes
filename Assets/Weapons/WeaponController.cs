@@ -54,27 +54,15 @@ public class WeaponController : MonoWithCachedTransform
 
 		for (int i = 0; i < config.projectileCountPerShot; ++i)
 		{
-			var horizontalDispersion = Random.Range(-_currentDispersionDegrees, _currentDispersionDegrees);
-			var verticalDispersion = Random.Range(-_currentDispersionDegrees, _currentDispersionDegrees);
-
 			var hDisplacement = 0f;
 			var vDisplacement = 0f;
 
-			if (!Mathf.Approximately(horizontalDispersion, 0f))
-			{
-				hDisplacement = Mathf.Tan(Mathf.PI / 180f * horizontalDispersion);
-			}
+			CalculateBulletDisplacementAtUnitDistance(ref hDisplacement, ref vDisplacement);
 
-			if (!Mathf.Approximately(verticalDispersion, 0f))
-			{
-				vDisplacement = Mathf.Tan(Mathf.PI / 180f * verticalDispersion);
-			}
+			var aimDirection = CachedTransform.forward + CachedTransform.up * vDisplacement +
+														 CachedTransform.right * hDisplacement;
 
-			var aimPoint = origin + CachedTransform.forward + CachedTransform.up * vDisplacement +
-															  CachedTransform.right * hDisplacement;
-			var aimDirection = aimPoint - origin;
-
-			_projectileRays.Add(aimPoint);
+			_projectileRays.Add(origin + aimDirection);
 
 			var hitCount = Physics.RaycastNonAlloc(origin: origin, direction: aimDirection, results: _hits, maxDistance: config.range);
 			if (hitCount > 0)
@@ -83,6 +71,22 @@ public class WeaponController : MonoWithCachedTransform
 			}
 		}
 		return true;
+	}
+
+	private void CalculateBulletDisplacementAtUnitDistance(ref float hDisplacement, ref float vDisplacement)
+	{
+		var horizontalDispersion = Random.Range(-_currentDispersionDegrees, _currentDispersionDegrees);
+		var verticalDispersion = Random.Range(-_currentDispersionDegrees, _currentDispersionDegrees);
+
+		if (!Mathf.Approximately(horizontalDispersion, 0f))
+		{
+			hDisplacement = Mathf.Tan(Mathf.PI / 180f * horizontalDispersion);
+		}
+
+		if (!Mathf.Approximately(verticalDispersion, 0f))
+		{
+			vDisplacement = Mathf.Tan(Mathf.PI / 180f * verticalDispersion);
+		}
 	}
 
 	private void ProcessHits()
