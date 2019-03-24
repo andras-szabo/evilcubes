@@ -12,7 +12,7 @@ public class WeaponConfig : ScriptableObject
 	[Range(1f, 500f)] public float range;
 
 	[Header("Bullet")]
-	[Range(0.1f, 100f)] public float damagePerProjectile;
+	[Range(1, 1000)] public int damagePerProjectile;
 	[Tooltip("After each penetration, projectile damage is reduced by this factor. " +
 			  "Set it to 1 to prevent penetration, and 0 to allow 'like hot knife through butter' behaviour.")]
 	[Range(0f, 1f)] public float dmgReductionRate;

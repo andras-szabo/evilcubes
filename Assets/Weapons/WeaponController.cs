@@ -15,11 +15,17 @@ public class WeaponController : MonoWithCachedTransform
 
 	private List<Vector3> _projectileRays = new List<Vector3>();
 	private int _enemyLayerMask;
+	private HitManager _hitManager;
 
 	private void Awake()
 	{
 		_enemyLayerMask = LayerMask.GetMask("EvilCubes");
 		HandleTriggerLetGo();
+	}
+
+	private void Start()
+	{
+		_hitManager = ManagerLocator.TryGet<HitManager>();
 	}
 
 	private void LateUpdate()
@@ -112,11 +118,12 @@ public class WeaponController : MonoWithCachedTransform
 		for (int i = 0; i < _hitsByDistance.Count && damage > 0.1f; ++i)
 		{
 			var hit = _hitsByDistance.Values[i];
-			var go = hit.collider.gameObject;
-			var hitPosition = hit.point;
-			//collisionManager.ReportHit(go, hitPosition, damage);
-			damage *= (1f - config.dmgReductionRate);	
+			_hitManager.ReportHit(hit.collider.gameObject, hit.point, damage);
+			damage = (int) (damage * (1f - config.dmgReductionRate));
+			Debug.Log(damage);
 		}
+
+		Debug.Log("---");
 	}
 
 	private void ResetDispersionRate()
