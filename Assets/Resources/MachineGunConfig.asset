@@ -15,7 +15,7 @@ MonoBehaviour:
   isAutomatic: 1
   coolDownSeconds: 0.1
   range: 200
-  damagePerProjectile: 120
+  damagePerProjectile: 60
   dmgReductionRate: 0.5
   projectileCountPerShot: 1
   dispersionDegrees: 0.2
