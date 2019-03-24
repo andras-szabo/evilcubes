@@ -3,14 +3,25 @@ using UnityEngine;
 
 public class WeaponController : MonoWithCachedTransform
 {
-	private class WeaponState
+	public class WeaponState
 	{
+		public WeaponState(string name, float cooldown)
+		{
+			this.name = name;
+			this.cooldown = cooldown;
+		}
+
+		readonly public string name;
+		readonly public float cooldown;
+
 		public float elapsedSinceLastShot;
 		public float currentDispersionDegrees;
 	}
 
 	public const int MAX_HIT_PER_SHOT = 256;
 	public const float MAX_DISPERSION_DEGREE = 15f;
+
+	public event System.Action<WeaponState> OnWeaponChanged;
 
 	public WeaponConfig[] configs;
 
@@ -26,6 +37,14 @@ public class WeaponController : MonoWithCachedTransform
 	private int _enemyLayerMask;
 	private HitManager _hitManager;
 
+	public WeaponState CurrentWeaponState
+	{
+		get
+		{
+			return _activeWeaponState;
+		}
+	}
+
 	private void Awake()
 	{
 		_enemyLayerMask = LayerMask.GetMask("EvilCubes");
@@ -33,7 +52,7 @@ public class WeaponController : MonoWithCachedTransform
 		_weaponStates = new WeaponState[configs.Length];
 		for (int i = 0; i < configs.Length; ++i)
 		{
-			_weaponStates[i] = new WeaponState();
+			_weaponStates[i] = new WeaponState(configs[i].id, configs[i].coolDownSeconds);
 		}
 
 		SetActiveWeapon(0);
@@ -60,6 +79,8 @@ public class WeaponController : MonoWithCachedTransform
 			_activeConfig = configs[_activeConfigIndex];
 			_activeWeaponState = _weaponStates[_activeConfigIndex];
 			ResetActiveWeaponDispersionRate();
+
+			OnWeaponChanged?.Invoke(_activeWeaponState);
 
 			Debug.Log("Set active weapon: " + _activeConfig.id);			
 		}

@@ -16,7 +16,7 @@ MonoBehaviour:
   coolDownSeconds: 3
   range: 500
   damagePerProjectile: 500
-  dmgReductionRate: 0.2
+  dmgReductionRate: 0
   projectileCountPerShot: 1
   dispersionDegrees: 0.01
   dispersionIncrementOverTime: 1.5

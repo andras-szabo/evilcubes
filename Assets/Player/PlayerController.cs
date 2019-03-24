@@ -1,14 +1,13 @@
 ﻿using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IManager
 {
 	public CameraRotator camRotator;
 	public WeaponController weaponController;
 
 	private void Awake()
 	{
-		//TODO
-		//GameController.TryRegister<IPlayerController>(this);
+		ManagerLocator.TryRegister<PlayerController>(this);
 	}
 
 	private void Update()
