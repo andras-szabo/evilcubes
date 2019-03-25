@@ -18,5 +18,5 @@ MonoBehaviour:
   damagePerProjectile: 60
   dmgReductionRate: 0.5
   projectileCountPerShot: 1
-  dispersionDegrees: 0.3
-  dispersionIncrementOverTime: 1.4
+  dispersionDegrees: 0.6
+  dispersionIncrementOverTime: 1.6
