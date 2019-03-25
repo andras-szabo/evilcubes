@@ -25,6 +25,7 @@ GameObject:
   - component: {fileID: 54658935431042416}
   - component: {fileID: 114769539155879914}
   - component: {fileID: 114790885406819588}
+  - component: {fileID: 114148609308562874}
   m_Layer: 10
   m_Name: MockEnemyCube
   m_TagString: Untagged
@@ -114,6 +115,17 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114148609308562874
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1741700546006128}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 982eaeb4e5c12bf40b1885cf47ab7b32, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &114769539155879914
 MonoBehaviour:
   m_ObjectHideFlags: 1
