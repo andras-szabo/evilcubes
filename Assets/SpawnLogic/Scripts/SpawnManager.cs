@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class SpawnManager : MonoBehaviour, IManager
 {
+	public const float MAX_SPAWN_COUNT_PER_FRAME = 12f;
+
 	[HideInInspector]
 	public EnemyType[] spawnableEnemies = new EnemyType[]
 	{
@@ -30,6 +32,7 @@ public class SpawnManager : MonoBehaviour, IManager
 
 	private int _enemyLayerMask;
 	private Dictionary<EnemyType, EnemyConfig> _enemyConfigsByType;
+	private Vector3[] _candidateSpawnPositions = new Vector3[4];
 
 	private void Awake()
 	{
@@ -86,20 +89,19 @@ public class SpawnManager : MonoBehaviour, IManager
 		ResetVariables();
 		SetActiveConfig(_activeWaveIndex);
 
-		var activeConfig = config.waves[_activeWaveIndex];
-		var spawnInterval = Mathf.Max(WaveConfig.MIN_SPAWN_INTERVAL, activeConfig.spawnIntervalSeconds);
+		var spawnInterval = Mathf.Max(WaveConfig.MIN_SPAWN_INTERVAL, _activeConfig.spawnIntervalSeconds);
 
 		while (!_spawnCancelToken)
 		{
 			_elapsedSinceLastSpawn += Time.deltaTime;
-			var idealSpawnCount = _elapsedSinceLastSpawn / spawnInterval;
+			var idealSpawnCount = Mathf.Min(_elapsedSinceLastSpawn / spawnInterval, MAX_SPAWN_COUNT_PER_FRAME);
 			if (idealSpawnCount >= 1f)
 			{
 				for (int i = 0; i < (int)idealSpawnCount; ++i)
 				{
-					if (_liveEnemyCount < activeConfig.maxLiveCubeCount)
+					if (_liveEnemyCount < _activeConfig.maxLiveCubeCount)
 					{
-						if (TrySpawnNewEnemy(activeConfig, _cumulativeSpawnChances))
+						if (TrySpawnNewEnemy(_activeConfig, _cumulativeSpawnChances))
 						{
 							_elapsedSinceLastSpawn -= spawnInterval;
 						}
@@ -124,11 +126,7 @@ public class SpawnManager : MonoBehaviour, IManager
 		success &= _enemyConfigsByType.TryGetValue(enemyToSpawnType, out enemyConfig);
 		success &= TryPickRandomPositionToSpawn(enemyConfig, out spawnPosition);
 
-		if (success)
-		{
-			DoSpawn(enemyConfig, spawnPosition);
-		}
-
+		if (success) { DoSpawn(enemyConfig, spawnPosition); }
 		return success;
 	}
 
@@ -138,12 +136,15 @@ public class SpawnManager : MonoBehaviour, IManager
 		var nme = Instantiate<Enemy>(enemyPrefab, spawnPosition, rotationToFacePlayer);
 		nme.Setup(enemyConfig);
 
+		//TODO: Let the enemy do this when it subscribes
 		_liveEnemyCount++;
 	}
 
+
+
 	private bool TryPickRandomPositionToSpawn(EnemyConfig enemyConfig, out Vector3 position)
 	{
-		var triesLeft = 12;
+		var triesLeft = 8;
 
 		while (enemyConfig != null && triesLeft-- > 0)
 		{
@@ -155,15 +156,12 @@ public class SpawnManager : MonoBehaviour, IManager
 
 			var centreHeight = enemyConfig.edgeSize / 2f;
 
-			var candidatePositions = new Vector3[]
-			{
-				new Vector3(cos, centreHeight, sin),
-				new Vector3(sin, centreHeight, -cos),
-				new Vector3(-cos, centreHeight, -sin),
-				new Vector3(-sin, centreHeight, cos)
-			};
+			_candidateSpawnPositions[0] = new Vector3(cos, centreHeight, sin);
+			_candidateSpawnPositions[1] = new Vector3(sin, centreHeight, -cos);
+			_candidateSpawnPositions[2] = new Vector3(-cos, centreHeight, -sin);
+			_candidateSpawnPositions[3] = new Vector3(-sin, centreHeight, cos);
 
-			foreach (var candidatePosition in candidatePositions)
+			foreach (var candidatePosition in _candidateSpawnPositions)
 			{
 				if (CanSpawnEnemyAt(enemyConfig, candidatePosition))
 				{
