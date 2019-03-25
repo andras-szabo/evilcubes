@@ -7,6 +7,15 @@ public class TestMover : MonoWithCachedTransform
 {
 	public const float EXTRA_SAFETY_MARGIN = 0f;
 	public static float rollAngleSpeedPerFrame = 2f;
+
+	public static float RollAngleSpeedPerFrame
+	{
+		get
+		{
+			return rollAngleSpeedPerFrame * Time.timeScale;
+		}
+	}
+
 	public Transform meshToRotate;
 
 	public Vector3 target;
@@ -47,6 +56,8 @@ public class TestMover : MonoWithCachedTransform
 
 		var maxStepDistance = isJumper ? 4f : _awarenessRadius;
 		CubeAwareness.UpdateSize(_awarenessRadius, maxStepDistance);
+
+		YawToTarget();
 
 		if (isJumper)
 		{
@@ -179,19 +190,30 @@ public class TestMover : MonoWithCachedTransform
 			fromEdgeToCentre += new Vector3(0f, halfSize, 0f);
 
 			var axisToRotateAround = CachedTransform.forward;
-			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, left ? rollAngleSpeedPerFrame : -rollAngleSpeedPerFrame);
+			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, left ? RollAngleSpeedPerFrame : -RollAngleSpeedPerFrame);
 			var anglesRotated = 0f;
+			var anglePerFrame = left ? RollAngleSpeedPerFrame : -RollAngleSpeedPerFrame;
 
-			while (anglesRotated < 90f)
+			while (!Mathf.Approximately(anglePerFrame, 0f) && Mathf.Abs(anglesRotated) < 90f)
 			{
 				var delta = CachedTransform.position - fromEdgeToCentre;
 				fromEdgeToCentre = matrix.MultiplyPoint3x4(fromEdgeToCentre);
 				CachedTransform.position = fromEdgeToCentre + delta;
-				anglesRotated += rollAngleSpeedPerFrame;
-				meshToRotate.Rotate(new Vector3(0f, 0f, left ? rollAngleSpeedPerFrame : -rollAngleSpeedPerFrame), Space.Self);
+				anglesRotated += anglePerFrame;
+
+				if (Mathf.Abs(anglesRotated) > 90f)
+				{
+					var overRotationDegrees = (Mathf.Abs(anglesRotated) - 90f);
+					if (anglePerFrame < 0f) { anglePerFrame += overRotationDegrees; }
+					else { anglePerFrame -= overRotationDegrees; }
+				}
+
+				meshToRotate.Rotate(new Vector3(0f, 0f, anglePerFrame), Space.Self);
 				YawToTarget();
 				yield return null;
 			}
+
+			Debug.Log(anglesRotated);
 
 			CachedTransform.position = new Vector3(CachedTransform.position.x, halfSize, CachedTransform.position.z);
 			YawToTarget();
@@ -233,17 +255,24 @@ public class TestMover : MonoWithCachedTransform
 			var fromEdgeToCentre = new Vector3(0.0f, halfSize, 0.0f) - CachedTransform.forward.normalized * halfSize;
 
 			var axisToRotateAround = CachedTransform.right;
-			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, rollAngleSpeedPerFrame);
+			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, RollAngleSpeedPerFrame);
 			var anglesRotated = 0f;
+			var anglePerFrame = RollAngleSpeedPerFrame;
 
-			while (anglesRotated < 90f)
+			while (anglePerFrame > 0f && anglesRotated < 90f)
 			{
 				var delta = CachedTransform.position - fromEdgeToCentre;
 				fromEdgeToCentre = matrix.MultiplyPoint3x4(fromEdgeToCentre);
 				CachedTransform.position = fromEdgeToCentre + delta;
-				anglesRotated += rollAngleSpeedPerFrame;
+				anglesRotated += anglePerFrame;
 
-				meshToRotate.Rotate(new Vector3(rollAngleSpeedPerFrame, 0f, 0f), Space.Self);
+				//To prevent overrolling
+				if (anglesRotated > 90f)
+				{
+					anglePerFrame -= (anglesRotated - 90f);
+				}
+
+				meshToRotate.Rotate(new Vector3(anglePerFrame, 0f, 0f), Space.Self);
 
 				yield return null;
 			}
