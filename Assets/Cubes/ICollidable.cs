@@ -9,5 +9,5 @@ public interface ICollidable
 	event CubeAwarenessDelegate OnRemoved;
 
 	bool OverlapsPosition(Vector3 position, float cubeSize);
-	bool OverlapsAnyPosition(IEnumerable<Vector3> positions, float cubeSize);
+	bool OverlapsAnyPosition(IEnumerable<Vector3> positions, float cubeSize, bool log = false);
 }

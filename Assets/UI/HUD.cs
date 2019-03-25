@@ -53,11 +53,12 @@ public class HUD : MonoBehaviour
 			var wc = _player.weaponController;
 			HandleWeaponChanged(wc.CurrentWeaponState);
 			HandleDispersionChanged(wc.CurrentWeaponState.currentDispersionDegrees);
+
 			wc.OnWeaponChanged += HandleWeaponChanged;
 			wc.OnDispersionChanged += HandleDispersionChanged;
+			
+			_isSetup = true;
 		}
-
-		_isSetup = true;
 	}
 
 	private void HandleDispersionChanged(float currentDispersionDegrees)

@@ -5,9 +5,11 @@ using UnityEngine;
 [RequireComponent(typeof(CubeAwareness))]
 public class TestMover : MonoWithCachedTransform
 {
-	public const float EXTRA_SAFETY_MARGIN = 0.1f;
+	public const float EXTRA_SAFETY_MARGIN = 0f;
 	public static float rollAngleSpeedPerFrame = 2f;
 	public Transform meshToRotate;
+
+	public Vector3 target;
 
 	[Range(0f, 100f)]
 	public float jumpForce = 10f;
@@ -43,7 +45,7 @@ public class TestMover : MonoWithCachedTransform
 		var halfDiagonal = Mathf.Sqrt(Mathf.Pow(halfSize, 2f) * 2f);
 		_awarenessRadius = Mathf.Sqrt(Mathf.Pow(halfSize, 2f) + Mathf.Pow(halfDiagonal, 2f)) + EXTRA_SAFETY_MARGIN;
 
-		var maxStepDistance = isJumper ? 4f : _awarenessRadius; 
+		var maxStepDistance = isJumper ? 4f : _awarenessRadius;
 		CubeAwareness.UpdateSize(_awarenessRadius, maxStepDistance);
 
 		if (isJumper)
@@ -55,7 +57,7 @@ public class TestMover : MonoWithCachedTransform
 		}
 		else
 		{
-			StartCoroutine(RollForwardRoutine());
+			StartCoroutine(RollSidewaysRoutine());
 		}
 	}
 
@@ -81,7 +83,7 @@ public class TestMover : MonoWithCachedTransform
 		while (true)
 		{
 			var path = trajectory.GetRange(1, trajectory.Count - 1);
-			yield return WaitUntilPathFreeRoutine(path, true);
+			yield return WaitUntilPathFreeRoutine(path);
 			CubeAwareness.UpdatePath(path);
 
 			var jAngle = _jumpForward ? -jumpAngle : 180f + jumpAngle;
@@ -96,7 +98,7 @@ public class TestMover : MonoWithCachedTransform
 
 			var trajectorySectionCount = 16;
 			var timeForOneSection = totalTime / trajectorySectionCount;
-					   
+
 			while (elapsed < totalTime)
 			{
 				elapsed += Time.fixedDeltaTime;
@@ -106,9 +108,9 @@ public class TestMover : MonoWithCachedTransform
 				var dz = initialVelocity.z * elapsed;
 
 				CachedTransform.position = startingPoint + new Vector3(dx, dy, dz);
-				meshToRotate.localRotation = Quaternion.Euler(90f * (_jumpForward ? 1f: -1f) * (elapsed / totalTime), 0f, 0f);
+				meshToRotate.localRotation = Quaternion.Euler(90f * (_jumpForward ? 1f : -1f) * (elapsed / totalTime), 0f, 0f);
 
-				var elapsedTrajectorySections = (int) (elapsed / timeForOneSection);
+				var elapsedTrajectorySections = (int)(elapsed / timeForOneSection);
 				if (elapsedTrajectorySections < 1)
 				{
 					elapsedTrajectorySections = 1;
@@ -157,18 +159,27 @@ public class TestMover : MonoWithCachedTransform
 		}
 	}
 
-	//TODO UPDATE
 	private IEnumerator RollSidewaysRoutine()
 	{
+		yield return new WaitForSeconds(0.2f + Random.Range(0f, 0.2f));
+
 		while (true)
 		{
 			var left = false;
-			var halfSize = 0.5f;
+			var path = new List<Vector3>
+			{
+				CachedTransform.position + (left ? -1f : 1f) * CachedTransform.right * (halfSize * 2f)
+			};
+
+			yield return WaitUntilPathFreeRoutine(path);
+
+			CubeAwareness.UpdatePath(path);
+
 			var fromEdgeToCentre = left ? CachedTransform.right * halfSize : -CachedTransform.right * halfSize;
 			fromEdgeToCentre += new Vector3(0f, halfSize, 0f);
 
 			var axisToRotateAround = CachedTransform.forward;
-			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, left ? 0.5f : -0.5f);
+			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, left ? rollAngleSpeedPerFrame : -rollAngleSpeedPerFrame);
 			var anglesRotated = 0f;
 
 			while (anglesRotated < 90f)
@@ -176,13 +187,23 @@ public class TestMover : MonoWithCachedTransform
 				var delta = CachedTransform.position - fromEdgeToCentre;
 				fromEdgeToCentre = matrix.MultiplyPoint3x4(fromEdgeToCentre);
 				CachedTransform.position = fromEdgeToCentre + delta;
-				anglesRotated += 0.5f;
-				meshToRotate.Rotate(new Vector3(0f, 0f, left ? 0.5f : -0.5f), Space.Self);
+				anglesRotated += rollAngleSpeedPerFrame;
+				meshToRotate.Rotate(new Vector3(0f, 0f, left ? rollAngleSpeedPerFrame : -rollAngleSpeedPerFrame), Space.Self);
+				YawToTarget();
 				yield return null;
 			}
 
-			CachedTransform.position = new Vector3(CachedTransform.position.x, 0.5f, CachedTransform.position.z);
+			CachedTransform.position = new Vector3(CachedTransform.position.x, halfSize, CachedTransform.position.z);
+			YawToTarget();
+
+			//TODO: ClearPath
+			CubeAwareness.UpdatePath(new List<Vector3>());
 		}
+	}
+
+	private void YawToTarget()
+	{
+		CachedTransform.LookAt(new Vector3(target.x, CachedTransform.position.y, target.z), Vector3.up);
 	}
 
 	private IEnumerator WaitUntilPathFreeRoutine(IEnumerable<Vector3> path, bool log = false)
@@ -207,14 +228,14 @@ public class TestMover : MonoWithCachedTransform
 
 			yield return WaitUntilPathFreeRoutine(path);
 
-			CubeAwareness.UpdatePath(new List<Vector3> { path[0] });
+			CubeAwareness.UpdatePath(path);
 
 			var fromEdgeToCentre = new Vector3(0.0f, halfSize, 0.0f) - CachedTransform.forward.normalized * halfSize;
-			
+
 			var axisToRotateAround = CachedTransform.right;
 			var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround.normalized, rollAngleSpeedPerFrame);
 			var anglesRotated = 0f;
-			
+
 			while (anglesRotated < 90f)
 			{
 				var delta = CachedTransform.position - fromEdgeToCentre;
@@ -236,6 +257,10 @@ public class TestMover : MonoWithCachedTransform
 
 	private void OnDrawGizmos()
 	{
+		Gizmos.color = Color.blue;
+		var tr = gameObject.transform;
+		Gizmos.DrawRay(tr.position, tr.forward * meshToRotate.localScale.x);
+
 		if (Application.isPlaying)
 		{
 			DrawTrajectory();

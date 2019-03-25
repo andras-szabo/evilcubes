@@ -15,15 +15,30 @@ public class CubeAwareness : MonoWithCachedTransform, ICollidable
 	private float _mySize = 1f;
 
 	private List<Vector3> _myPath = new List<Vector3>();
+	private List<Vector3> _provisionalPath = new List<Vector3>();
 
 	private void OnDrawGizmos()
 	{
 		if (Application.isPlaying)
 		{
-			Gizmos.color = gizmoColor;
-			foreach (var pos in _myPath)
+			if (_myPath.Count > 0)
 			{
-				Gizmos.DrawWireSphere(pos, _mySize);
+				Gizmos.color = gizmoColor;
+				foreach (var pos in _myPath)
+				{
+					Gizmos.DrawWireSphere(pos, _mySize);
+				}
+			}
+			else if (_provisionalPath.Count > 0)
+			{
+				Gizmos.color = Color.cyan;
+				foreach (var pos in _provisionalPath)
+				{
+					Gizmos.DrawWireSphere(pos, _mySize);
+				}
+
+				Gizmos.color = Color.red;
+				Gizmos.DrawWireSphere(CachedTransform.position, _mySize);
 			}
 		}
 	}
@@ -52,6 +67,9 @@ public class CubeAwareness : MonoWithCachedTransform, ICollidable
 			Debug.LogWarning("----");
 		}
 
+		_provisionalPath.Clear();
+		_provisionalPath.AddRange(path);
+
 		foreach (var otherCube in _otherCubesNearby)
 		{
 			if (log && L)
@@ -59,7 +77,7 @@ public class CubeAwareness : MonoWithCachedTransform, ICollidable
 				Debug.LogWarning(otherCube.gameObject.name);
 			}
 
-			if (otherCube.OverlapsAnyPosition(path, mySize))
+			if (otherCube.OverlapsAnyPosition(path, mySize, log))
 			{
 				return false;
 			}
@@ -68,14 +86,16 @@ public class CubeAwareness : MonoWithCachedTransform, ICollidable
 		return true;
 	}
 
-	public bool OverlapsAnyPosition(IEnumerable<Vector3> positions, float otherCubeSize)
+	public bool OverlapsAnyPosition(IEnumerable<Vector3> positions, float otherCubeSize, bool log = false)
 	{
 		var distanceLimitSquared = Mathf.Pow(otherCubeSize + _mySize, 2f);
+		if (log) { Debug.LogWarning(distanceLimitSquared); }
 
 		foreach (var pos in positions)
 		{
 			if (Vector3.SqrMagnitude(CachedTransform.position - pos) <= distanceLimitSquared)
 			{
+				if (log) { Debug.LogWarningFormat("{0} pos", gameObject.name); }
 				return true;
 			}
 
