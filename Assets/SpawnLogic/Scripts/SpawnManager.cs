@@ -150,9 +150,10 @@ public class SpawnManager : MonoBehaviour, IManager
 		{
 			// This is assuming the player is in the origin.
 
+			var distance = Random.Range(_activeConfig.minSpawnDistanceFromPlayer, _activeConfig.maxSpawnDistanceFromPlayer);
 			var angle = Random.Range(0f, 360f) * Mathf.PI / 180f;
-			var sin = Mathf.Sin(angle) * _activeConfig.spawnDistanceFromPlayer;
-			var cos = Mathf.Cos(angle) * _activeConfig.spawnDistanceFromPlayer;
+			var sin = Mathf.Sin(angle) * distance;
+			var cos = Mathf.Cos(angle) * distance;
 
 			var centreHeight = enemyConfig.edgeSize / 2f;
 

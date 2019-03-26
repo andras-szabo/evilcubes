@@ -18,5 +18,6 @@ MonoBehaviour:
   spawnChanceJumper: 1
   spawnChanceZigZag: 1
   titanToAppearAt: 50
-  spawnDistanceFromPlayer: 20
+  minSpawnDistanceFromPlayer: 40
+  maxSpawnDistanceFromPlayer: 60
   cubeSpeedUnitsPerSec: 10

@@ -20,8 +20,14 @@ public class WaveConfig : ScriptableObject
 	[Range(1, 500)] public int titanToAppearAt;
 
 	[Header("Spawn distance &c")]
-	[Range(10f, 1000f)] public float spawnDistanceFromPlayer;
+	[Range(10f, 1000f)] public float minSpawnDistanceFromPlayer;
+	[Range(10f, 1000f)] public float maxSpawnDistanceFromPlayer;
 	[Range(0.2f, 100f)] public float cubeSpeedUnitsPerSec;
+
+	private void OnValidate()
+	{
+		maxSpawnDistanceFromPlayer = Mathf.Max(minSpawnDistanceFromPlayer, maxSpawnDistanceFromPlayer);
+	}
 
 	public float GetSpawnChance(EnemyType type)
 	{
