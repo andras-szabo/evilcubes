@@ -213,8 +213,6 @@ public class TestMover : MonoWithCachedTransform
 				yield return null;
 			}
 
-			Debug.Log(anglesRotated);
-
 			CachedTransform.position = new Vector3(CachedTransform.position.x, halfSize, CachedTransform.position.z);
 			YawToTarget();
 
