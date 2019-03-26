@@ -25,7 +25,7 @@ public class JumpStrategy : AMovementStrategy
 			}
 			else
 			{
-				yield return _roll.Execute();
+				//yield return _roll.Execute();
 			}
 		}
 	}
@@ -50,6 +50,10 @@ public class RollStrategy : AMovementStrategy
 {
 	public override IEnumerator RunRoutine()
 	{
+		//TODO
+		yield break;
+
+		/*
 		while (true)
 		{
 			if (ShouldRollSideWays())
@@ -61,19 +65,19 @@ public class RollStrategy : AMovementStrategy
 				yield return _rollForward.Execute();
 			}
 		}
+		*/
 	}
 }
 
 public abstract class AMove
 {
 	protected PathFinder _pathFinder;
-	protected float _halfBodyDiagonal;
 
 	private WaitForSeconds _pathCheckInterval = new WaitForSeconds(0.1f);
 
 	protected IEnumerator WaitUntilPathFreeRoutine(IEnumerable<Vector3> path)
 	{
-		while (!_pathFinder.IsPathFree(path, _halfBodyDiagonal))
+		while (!_pathFinder.IsPathFree(path))
 		{
 			yield return _pathCheckInterval;
 		}
@@ -100,7 +104,7 @@ public class JumpMove : AMove
 		CalculateTrajectory(_jumpForce, _jumpAngle);
 		var plannedPath = _trajectory.GetRange(1, _trajectory.Count - 1);
 		yield return WaitUntilPathFreeRoutine(plannedPath);
-		_pathFinder.UpdatePath(plannedPath);
+		_pathFinder.Path = plannedPath;
 
 		var elapsedTime = 0f;
 		var startingPoint = _cachedTransform.position;
@@ -122,7 +126,7 @@ public class JumpMove : AMove
 		}
 
 		_cachedTransform.position = endPoint;
-		_pathFinder.ClearPath();
+		_pathFinder.Path.Clear();
 	}
 
 	private void CalculateTrajectory(float jForce, float jumpAngle)
@@ -163,7 +167,7 @@ public class JumpMove : AMove
 		if (_previousRemainingSectionCount != remainingSectionCount)
 		{
 			_previousRemainingSectionCount = remainingSectionCount;
-			_pathFinder.UpdatePath(_trajectory.GetRange(elapsedTrajectorySections, remainingSectionCount));
+			_pathFinder.Path = _trajectory.GetRange(elapsedTrajectorySections, remainingSectionCount);
 		}
 	}
 }
