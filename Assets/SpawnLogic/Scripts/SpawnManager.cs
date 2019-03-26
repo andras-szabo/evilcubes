@@ -132,7 +132,7 @@ public class SpawnManager : MonoBehaviour, IManager
 
 	private void DoSpawn(EnemyConfig enemyConfig, Vector3 spawnPosition)
 	{
-		var rotationToFacePlayer = Quaternion.LookRotation(-spawnPosition, Vector3.up);
+		var rotationToFacePlayer = Quaternion.LookRotation(new Vector3(-spawnPosition.x, 0f, -spawnPosition.z), Vector3.up);
 		var nme = Instantiate<Enemy>(enemyPrefab, spawnPosition, rotationToFacePlayer);
 		nme.Setup(enemyConfig);
 

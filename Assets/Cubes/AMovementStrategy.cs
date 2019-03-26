@@ -182,7 +182,7 @@ public class RollMove : AMove
 				var delta = _cachedTransform.position - fromEdgeToCentre;
 				fromEdgeToCentre = matrix.MultiplyPoint3x4(fromEdgeToCentre);
 				_cachedTransform.position = fromEdgeToCentre + delta;
-				anglesRotated += _rollAnglePerUpdate;
+				anglesRotated += rollAngle;
 
 				if (Mathf.Abs(anglesRotated) > 90f)
 				{

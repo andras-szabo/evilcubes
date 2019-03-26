@@ -46,4 +46,10 @@ public class Enemy : MonoWithCachedTransform
 	{
 		return PathFinder.OverlapsAnyPositions(positions, otherCubeSize);
 	}
+
+	private void OnDrawGizmos()
+	{
+		PathFinder.OnDrawGizmos();
+	}
+
 }

@@ -57,4 +57,30 @@ public class PathFinder
 
 		return false;
 	}
+
+	public void OnDrawGizmos()
+	{
+		if (Application.isPlaying)
+		{
+			if (Path.Count > 0)
+			{
+				Gizmos.color = Color.green;
+				foreach (var pos in Path)
+				{
+					Gizmos.DrawWireSphere(pos, _mySize);
+				}
+			}
+			else if (ProvisionalPath.Count > 0)
+			{
+				Gizmos.color = Color.cyan;
+				foreach (var pos in ProvisionalPath)
+				{
+					Gizmos.DrawWireSphere(pos, _mySize);
+				}
+
+				Gizmos.color = Color.red;
+				Gizmos.DrawWireSphere(_cachedTransform.position, _mySize);
+			}
+		}
+	}
 }
