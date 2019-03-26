@@ -4,16 +4,52 @@ using UnityEngine;
 
 public abstract class AMovementStrategy
 {
+	protected PathFinder _pathFinder;
+	protected Transform _cachedTransform;
+	protected Transform _meshToRotate;
+	protected float _edgeSize;
+	protected float _rollAnglePerUpdate;
+
+	public AMovementStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, float edgeSize, float cubeSpeedUnitsPerSecond)
+	{
+		_cachedTransform = cachedTransform;
+		_meshToRotate = meshToRotate;
+		_pathFinder = pathFinder;
+		_edgeSize = edgeSize;
+
+		_rollAnglePerUpdate = CalculateRollAnglePerUpdate(edgeSize, cubeSpeedUnitsPerSecond);
+	}
+
 	public abstract IEnumerator RunRoutine();
+	public abstract float GetMaxStepDistance();
+
+	private float CalculateRollAnglePerUpdate(float edgeSize, float cubeSpeedUnitsPerSecond)
+	{
+		return cubeSpeedUnitsPerSecond / edgeSize * 90f * Time.fixedDeltaTime;
+	}
 }
 
 public class JumpStrategy : AMovementStrategy
 {
 	private JumpMove _jump;
 	private RollMove _roll;
-	private Transform _cachedTransform;
+
 	private float _jumpDistance;
 	private float _jumpChance;
+
+	public JumpStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, float edgeSize, float cubeSpeedUnitsPerSecond) :
+		base(cachedTransform, meshToRotate, pathFinder, edgeSize, cubeSpeedUnitsPerSecond)
+	{
+
+		_jump = new JumpMove();
+		//_roll = new RollMove(_cachedTransform, _meshToRotate, _edgeSize, _rollAnglePerUpdate);
+	}
+
+	public override float GetMaxStepDistance()
+	{
+		//TODO FIX
+		return _edgeSize;
+	}
 
 	public override IEnumerator RunRoutine()
 	{
@@ -25,7 +61,7 @@ public class JumpStrategy : AMovementStrategy
 			}
 			else
 			{
-				//yield return _roll.Execute();
+				yield return _roll.Execute();
 			}
 		}
 	}
@@ -48,24 +84,26 @@ public class JumpStrategy : AMovementStrategy
 
 public class RollStrategy : AMovementStrategy
 {
+	private RollMove _roll;
+
+	public RollStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, float edgeSize, float cubeSpeedUnitsPerSecond) :
+				base(cachedTransform, meshToRotate, pathFinder, edgeSize, cubeSpeedUnitsPerSecond)
+	{
+		_roll = new RollMove(_cachedTransform, _meshToRotate, _pathFinder, _edgeSize, _rollAnglePerUpdate);
+	}
+
+	public override float GetMaxStepDistance()
+	{
+		return _edgeSize;
+	}
+
 	public override IEnumerator RunRoutine()
 	{
-		//TODO
-		yield break;
-
-		/*
 		while (true)
 		{
-			if (ShouldRollSideWays())
-			{
-				yield return _rollSideways.Execute();
-			}
-			else
-			{
-				yield return _rollForward.Execute();
-			}
+			//TODO
+			yield return _roll.Execute();
 		}
-		*/
 	}
 }
 
@@ -81,6 +119,154 @@ public abstract class AMove
 		{
 			yield return _pathCheckInterval;
 		}
+	}
+}
+
+public class RollMove : AMove
+{
+	public enum Direction
+	{
+		None,
+
+		Forward,
+		Back,
+		Left,
+		Right
+	}
+
+	private readonly Transform _cachedTransform;
+	private readonly Transform _meshToRotate;
+	private readonly float _edgeSize;
+	private readonly float _rollAnglePerUpdate;
+
+	private Direction _direction = Direction.Forward;
+
+	public RollMove(Transform cachedTransform, Transform mesh, PathFinder pathFinder, float edgeSize, float rollAnglePerUpdate)
+	{
+		_cachedTransform = cachedTransform;
+		_meshToRotate = mesh;
+		_edgeSize = edgeSize;
+		_rollAnglePerUpdate = rollAnglePerUpdate;
+		_pathFinder = pathFinder;
+	}
+
+	public IEnumerator Execute()
+	{
+		var plannedPath = CalculatePath(_direction, _edgeSize);
+		yield return WaitUntilPathFreeRoutine(plannedPath);
+		_pathFinder.Path = plannedPath;
+
+		var halfSize = _edgeSize / 2f;
+		Vector3 axisToRotateAround;
+		var fromEdgeToCentre = CalculateVectorFromEdgeToCentre(_direction, halfSize, out axisToRotateAround);
+
+		var rollAngle = _rollAnglePerUpdate;
+		if (_direction == Direction.Back || _direction == Direction.Right)
+		{
+			rollAngle *= -1f;
+		}
+
+		var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround, rollAngle);
+		var anglesRotated = 0f;
+		var elapsed = 0f;
+		var timeStep = Time.fixedDeltaTime;
+
+		while (_rollAnglePerUpdate > 0f && anglesRotated < 90f)
+		{
+			elapsed += Time.deltaTime;
+
+			while (elapsed > timeStep && anglesRotated < 90f)
+			{
+				elapsed -= timeStep;
+
+				var delta = _cachedTransform.position - fromEdgeToCentre;
+				fromEdgeToCentre = matrix.MultiplyPoint3x4(fromEdgeToCentre);
+				_cachedTransform.position = fromEdgeToCentre + delta;
+				anglesRotated += _rollAnglePerUpdate;
+
+				if (Mathf.Abs(anglesRotated) > 90f)
+				{
+					var overRotation = Mathf.Abs(anglesRotated) - 90f;
+					if (rollAngle < 0f) { rollAngle += overRotation; }
+					else { rollAngle -= overRotation; }
+				}
+
+				if (_direction == Direction.Forward || _direction == Direction.Back)
+				{
+					_meshToRotate.Rotate(new Vector3(rollAngle, 0f, 0f), Space.Self);
+				}
+				else
+				{
+					_meshToRotate.Rotate(new Vector3(0f, 0f, rollAngle), Space.Self);
+				}
+			}
+
+			if (_direction == Direction.Left || _direction == Direction.Right)
+			{
+				YawToTarget(halfSize);
+			}
+
+			yield return null;
+		}
+
+		_cachedTransform.position = new Vector3(_cachedTransform.position.x, halfSize, _cachedTransform.position.z);
+
+		if (_direction == Direction.Left || _direction == Direction.Right)
+		{
+			YawToTarget(halfSize);
+		}
+
+		_pathFinder.Path.Clear();
+	}
+
+	private void YawToTarget(float cubeCentreHeight)
+	{
+		_cachedTransform.LookAt(new Vector3(0f, cubeCentreHeight, 0f), Vector3.up);
+	}
+
+	private Vector3 CalculateVectorFromEdgeToCentre(Direction direction, float halfSize,
+						out Vector3 axisToRotateAround)
+	{
+		var centre = new Vector3(0f, halfSize, 0f);
+
+		switch (direction)
+		{
+			case Direction.Forward: axisToRotateAround = _cachedTransform.right; return centre - _cachedTransform.forward * halfSize;
+			case Direction.Back: axisToRotateAround = _cachedTransform.right; return centre + _cachedTransform.forward * halfSize;
+			case Direction.Left: axisToRotateAround = _cachedTransform.forward; return _cachedTransform.right * halfSize;
+			case Direction.Right: axisToRotateAround = _cachedTransform.forward; return -_cachedTransform.right * halfSize;
+		}
+
+		throw new System.NotImplementedException("Unknown rotation direction");
+	}
+
+	private List<Vector3> CalculatePath(Direction direction, float edgeSize)
+	{
+		Vector3 target = Vector3.zero;
+
+		switch (direction)
+		{
+			case Direction.Forward: target = _cachedTransform.position + _cachedTransform.forward * edgeSize; break;
+			case Direction.Back: target = _cachedTransform.position - _cachedTransform.forward * edgeSize; break;
+			case Direction.Left: target = _cachedTransform.position - _cachedTransform.right * edgeSize; break;
+			case Direction.Right: target = _cachedTransform.position + _cachedTransform.right * edgeSize; break;
+		}
+
+		return new List<Vector3> { target };
+	}
+
+	private Matrix4x4 MatrixToRotateAboutAxisByAngles(Vector3 n, float angle)
+	{
+		var angleInRadians = angle * Mathf.PI / 180f;
+		var cosa = Mathf.Cos(angleInRadians);
+		var sina = Mathf.Sin(angleInRadians);
+
+		var col1 = new Vector4(n.x * n.x * (1f - cosa) + cosa, n.x * n.y * (1f - cosa) + n.z * sina, n.x * n.z * (1f - cosa) - n.y * sina, 0f);
+		var col2 = new Vector4(n.x * n.y * (1f - cosa) - n.z * sina, n.y * n.y * (1f - cosa) + cosa, n.y * n.z * (1f - cosa) + n.x * sina, 0f);
+		var col3 = new Vector4(n.x * n.z * (1f - cosa) + n.y * sina, n.y * n.z * (1f - cosa) - n.x * sina, n.z * n.z * (1f - cosa) + cosa, 0f);
+		var col4 = new Vector4(0f, 0f, 0f, 1f);
+
+		return new Matrix4x4(col1, col2, col3, col4);
 	}
 }
 
@@ -109,7 +295,7 @@ public class JumpMove : AMove
 		var elapsedTime = 0f;
 		var startingPoint = _cachedTransform.position;
 		var endPoint = _cachedTransform.position + new Vector3(_initialVelocity.x * _jumpDuration, 0f, _initialVelocity.z * _jumpDuration);
-		_previousRemainingSectionCount = 0;	
+		_previousRemainingSectionCount = 0;
 
 		while (elapsedTime < _jumpDuration)
 		{
@@ -157,7 +343,7 @@ public class JumpMove : AMove
 	private void UpdatePath(float elapsedTime)
 	{
 		var elapsedTrajectorySections = (int)(elapsedTime / (_jumpDuration / _trajectorySectionCount));
-		
+
 		if (elapsedTrajectorySections < 1)
 		{
 			elapsedTrajectorySections = 1;
@@ -170,8 +356,4 @@ public class JumpMove : AMove
 			_pathFinder.Path = _trajectory.GetRange(elapsedTrajectorySections, remainingSectionCount);
 		}
 	}
-}
-
-public class RollMove
-{
 }

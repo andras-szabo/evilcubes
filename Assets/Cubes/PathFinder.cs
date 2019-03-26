@@ -15,6 +15,9 @@ public class PathFinder
 		_cachedTransform = cachedTransform;
 		_nearbyCubeTracker = tracker;
 		_mySize = cubeHalfDiagonal;
+
+		Path = new List<Vector3>();
+		ProvisionalPath = new List<Vector3>();
 	}
 
 	public bool IsPathFree(IEnumerable<Vector3> path)

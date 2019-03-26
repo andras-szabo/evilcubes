@@ -13,4 +13,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 4
   edgeSize: 8
+  speedUnitsPerSecond: 1
   halfBodyDiagonal: 6.928203
