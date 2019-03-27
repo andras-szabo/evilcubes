@@ -24,12 +24,17 @@ public class PathFinder
 		ProvisionalPath = new List<Vector3>();
 	}
 
-	public bool AmIOverlappingAnotherCube()
+	public bool AmIOverlappingAnotherCube(float halfEdge)
 	{
 		foreach (var other in _nearbyCubeTracker.OtherCubesNearby)
 		{
+			if (other.IsSpawning)
+			{
+				continue;
+			}
+
 			var dist = Vector3.SqrMagnitude(other.transform.position - _cachedTransform.position);
-			var min = Mathf.Pow(other.transform.localScale.x / 2f + _cachedTransform.localScale.x / 2f, 2f);
+			var min = Mathf.Pow(other.mesh.localScale.x / 2f + halfEdge, 2f);
 
 			if (dist < min)
 			{

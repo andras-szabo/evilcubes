@@ -12,6 +12,8 @@ public class Enemy : MonoWithCachedTransform
 	public Renderer meshRenderer;
 	public PathFinder PathFinder { get; private set; }
 
+	public bool IsSpawning { get; private set; }
+
 	private NearbyCubeTracker _nearbyCubeTracker;
 	private NearbyCubeTracker CubeTracker
 	{
@@ -40,12 +42,13 @@ public class Enemy : MonoWithCachedTransform
 		CubeTracker.UpdateTrackedAreaSize(_movementStrategy.GetMaxStepDistance());
 		UpdateVisuals(config);
 
+		IsSpawning = true;
 		StartCoroutine(CheckPathAndStartMovingRoutine());	
 	}
 
 	private void LateUpdate()
 	{
-		if (PathFinder.AmIOverlappingAnotherCube())
+		if (!IsSpawning && PathFinder.AmIOverlappingAnotherCube(mesh.localScale.x / 2f))
 		{
 			Debug.LogError(gameObject.name);
 			Debug.Break();
@@ -68,6 +71,7 @@ public class Enemy : MonoWithCachedTransform
 		else
 		{
 			meshRenderer.enabled = true;
+			IsSpawning = false;
 			yield return _movementStrategy.RunRoutine();
 		}
 	}

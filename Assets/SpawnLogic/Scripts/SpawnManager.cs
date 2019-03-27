@@ -14,14 +14,16 @@ public class SpawnManager : MonoBehaviour, IManager
 		EnemyType.Zigzag
 	};
 
+	[HideInInspector]
 	public uint spawnID = 0;
 
-	[Range(0, 100)] public int seed;
 	public SpawnConfig config;
 	public EnemyConfig[] enemyConfigs;
 	public Enemy enemyPrefab;
 
+	//TODO cleanup when
 	public bool startSpawningOnStart;
+	private List<GameObject> _spawnedEnemies = new List<GameObject>();
 
 	private WaveConfig _activeConfig;
 	private int _activeWaveIndex;
@@ -30,7 +32,7 @@ public class SpawnManager : MonoBehaviour, IManager
 	private float _elapsedSinceLastSpawn;
 	private bool _spawnCancelToken;
 	private Coroutine _spawnRoutine;
-		
+
 	private List<EnemyWithCumulativeSpawnChance> _cumulativeSpawnChances = new List<EnemyWithCumulativeSpawnChance>();
 
 	private int _enemyLayerMask;
@@ -42,8 +44,6 @@ public class SpawnManager : MonoBehaviour, IManager
 		Init();
 		ManagerLocator.TryRegister<SpawnManager>(this);
 		ResetSpawningCompletely();
-
-		Random.InitState(seed);	
 	}
 
 	private void Start()
@@ -70,6 +70,16 @@ public class SpawnManager : MonoBehaviour, IManager
 		_spawnRoutine = StartCoroutine(SpawnRoutine());
 	}
 
+	public void StopSpawning()
+	{
+		if (_spawnRoutine != null)
+		{
+			StopCoroutine(_spawnRoutine);
+		}
+
+		_spawnRoutine = null;
+	}
+
 	private void SetActiveConfig(int waveConfigIndex)
 	{
 		_activeWaveIndex = waveConfigIndex;
@@ -91,7 +101,7 @@ public class SpawnManager : MonoBehaviour, IManager
 
 	private IEnumerator SpawnRoutine()
 	{
-		ResetVariables();
+		Reset();
 		SetActiveConfig(_activeWaveIndex);
 
 		var spawnInterval = Mathf.Max(WaveConfig.MIN_SPAWN_INTERVAL, _activeConfig.spawnIntervalSeconds);
@@ -120,6 +130,19 @@ public class SpawnManager : MonoBehaviour, IManager
 		_spawnRoutine = null;
 	}
 
+	public void Cleanup()
+	{
+		foreach (var spawnedEnemy in _spawnedEnemies)
+		{
+			Destroy(spawnedEnemy);
+		}
+
+		_spawnedEnemies.Clear();
+
+		_liveEnemyCount = 0;
+		spawnID = 0;
+	}
+
 	public bool TrySpawnNewEnemy(WaveConfig config, List<EnemyWithCumulativeSpawnChance> enemiesByCumulativeSpawnChance)
 	{
 		var success = true;
@@ -142,6 +165,8 @@ public class SpawnManager : MonoBehaviour, IManager
 
 		nme.gameObject.name = string.Format("Spawnee {0}", spawnID++);
 		nme.Setup(enemyConfig);
+
+		_spawnedEnemies.Add(nme.gameObject);
 
 		//TODO: Let the enemy do this when it subscribes
 		_liveEnemyCount++;
@@ -187,7 +212,7 @@ public class SpawnManager : MonoBehaviour, IManager
 		return colliders == null || colliders.Length < 1;
 	}
 
-	public static EnemyType PickRandomEnemyToSpawn(List<EnemyWithCumulativeSpawnChance> enemiesByCumulativeSpawnChance, 
+	public static EnemyType PickRandomEnemyToSpawn(List<EnemyWithCumulativeSpawnChance> enemiesByCumulativeSpawnChance,
 												   float chanceOverride = -1f)
 	{
 		if (enemiesByCumulativeSpawnChance == null) { return EnemyType.Simple; }
@@ -219,7 +244,7 @@ public class SpawnManager : MonoBehaviour, IManager
 	{
 	}
 
-	private void ResetVariables()
+	public void Reset()
 	{
 		_activeConfig = null;
 		_activeWaveIndex = 0;
@@ -232,13 +257,8 @@ public class SpawnManager : MonoBehaviour, IManager
 
 	public void ResetSpawningCompletely()
 	{
-		ResetVariables();
-
-		if (_spawnRoutine != null)
-		{
-			StopCoroutine(_spawnRoutine);
-			_spawnRoutine = null;
-		}
+		StopSpawning();
+		Reset();
 	}
 }
 
