@@ -8,6 +8,8 @@ public class NearbyCubeTracker : MonoBehaviour
 	private List<Enemy> _otherCubesNearby = new List<Enemy>();
 	private HashSet<int> _otherCubeIDS = new HashSet<int>();
 
+	private SphereCollider _sphereCollider;
+
 	public List<Enemy> OtherCubesNearby
 	{
 		get
@@ -18,10 +20,10 @@ public class NearbyCubeTracker : MonoBehaviour
 
 	public void UpdateTrackedAreaSize(float maxStepDistance)
 	{
-		var sphereCollider = GetComponent<SphereCollider>();
-		if (sphereCollider != null)
+		_sphereCollider = GetComponent<SphereCollider>();
+		if (_sphereCollider != null)
 		{
-			sphereCollider.radius = maxStepDistance * 2.25f;
+			_sphereCollider.radius = maxStepDistance * 3f;
 		}
 	}
 
@@ -78,5 +80,23 @@ public class NearbyCubeTracker : MonoBehaviour
 	private void HandleOtherCubeRemoved(Enemy cube)
 	{
 		UnregisterOther(cube);
+	}
+
+	private void OnDrawGizmos()
+	{
+		if (_sphereCollider != null)
+		{
+			Gizmos.color = Color.magenta;
+			Gizmos.DrawWireSphere(transform.position, _sphereCollider.radius);
+		}	
+	}
+
+	private void OnDrawGizmosSelected()
+	{
+		Gizmos.color = Color.yellow;
+		foreach (var cube in _otherCubesNearby)
+		{
+			Gizmos.DrawLine(cube.transform.position, transform.position);
+		}
 	}
 }

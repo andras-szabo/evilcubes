@@ -113,12 +113,16 @@ public abstract class AMove
 
 	private WaitForSeconds _pathCheckInterval = new WaitForSeconds(0.1f);
 
-	protected IEnumerator WaitUntilPathFreeRoutine(IEnumerable<Vector3> path)
+	protected int frameCounter;
+
+	protected IEnumerator WaitUntilPathFreeRoutine(List<Vector3> path)
 	{
 		while (!_pathFinder.IsPathFree(path))
 		{
 			yield return _pathCheckInterval;
 		}
+
+		_pathFinder.Path = path;
 	}
 }
 
@@ -154,7 +158,7 @@ public class RollMove : AMove
 	{
 		var plannedPath = CalculatePath(_direction, _edgeSize);
 		yield return WaitUntilPathFreeRoutine(plannedPath);
-		_pathFinder.Path = plannedPath;
+		//Debug.LogFormat("{0} executing at: {1}", _cachedTransform.gameObject.name, Time.frameCount);
 
 		var halfSize = _edgeSize / 2f;
 		Vector3 axisToRotateAround;
@@ -217,6 +221,7 @@ public class RollMove : AMove
 		}
 
 		_pathFinder.Path.Clear();
+		//Debug.LogWarningFormat("{0} clears at {1}", _cachedTransform.gameObject.name, Time.frameCount);
 	}
 
 	private void YawToTarget(float cubeCentreHeight)
@@ -290,7 +295,6 @@ public class JumpMove : AMove
 		CalculateTrajectory(_jumpForce, _jumpAngle);
 		var plannedPath = _trajectory.GetRange(1, _trajectory.Count - 1);
 		yield return WaitUntilPathFreeRoutine(plannedPath);
-		_pathFinder.Path = plannedPath;
 
 		var elapsedTime = 0f;
 		var startingPoint = _cachedTransform.position;

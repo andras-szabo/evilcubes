@@ -14,6 +14,9 @@ public class SpawnManager : MonoBehaviour, IManager
 		EnemyType.Zigzag
 	};
 
+	public uint spawnID = 0;
+
+	[Range(0, 100)] public int seed;
 	public SpawnConfig config;
 	public EnemyConfig[] enemyConfigs;
 	public Enemy enemyPrefab;
@@ -39,6 +42,8 @@ public class SpawnManager : MonoBehaviour, IManager
 		Init();
 		ManagerLocator.TryRegister<SpawnManager>(this);
 		ResetSpawningCompletely();
+
+		Random.InitState(seed);	
 	}
 
 	private void Start()
@@ -134,13 +139,13 @@ public class SpawnManager : MonoBehaviour, IManager
 	{
 		var rotationToFacePlayer = Quaternion.LookRotation(new Vector3(-spawnPosition.x, 0f, -spawnPosition.z), Vector3.up);
 		var nme = Instantiate<Enemy>(enemyPrefab, spawnPosition, rotationToFacePlayer);
+
+		nme.gameObject.name = string.Format("Spawnee {0}", spawnID++);
 		nme.Setup(enemyConfig);
 
 		//TODO: Let the enemy do this when it subscribes
 		_liveEnemyCount++;
 	}
-
-
 
 	private bool TryPickRandomPositionToSpawn(EnemyConfig enemyConfig, out Vector3 position)
 	{

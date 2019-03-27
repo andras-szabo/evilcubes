@@ -141,6 +141,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnableEnemies: 010000000200000003000000
+  spawnID: 3
+  seed: 3
   config: {fileID: 11400000, guid: 22159b0291983964b86c399c9cc7df80, type: 2}
   enemyConfigs:
   - {fileID: 11400000, guid: a11e0b9453ff80143bbaf9781e7b4f2c, type: 2}

@@ -23,7 +23,7 @@ GameObject:
   - component: {fileID: 23880977717871490}
   - component: {fileID: 65131429688309330}
   m_Layer: 10
-  m_Name: TestCube
+  m_Name: TestCubeMesh
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -68,7 +68,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1492989650126434}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.40400553, y: 4.54891, z: -3.0848696}
+  m_LocalPosition: {x: -1.8590534, y: -6.7687267e-18, z: 30.483633}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4048193363227510}
@@ -156,6 +156,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   mesh: {fileID: 4048193363227510}
+  meshRenderer: {fileID: 23880977717871490}
 --- !u!114 &114977923216446314
 MonoBehaviour:
   m_ObjectHideFlags: 1
