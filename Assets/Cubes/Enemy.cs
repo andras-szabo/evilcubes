@@ -38,7 +38,7 @@ public class Enemy : MonoWithCachedTransform
 	public void Setup(EnemyConfig config, float speedMultiplier = 1f)
 	{
 		PathFinder = new PathFinder(CachedTransform, CubeTracker, config.halfBodyDiagonal);
-		PickMovementStrategy(config, UnityEngine.Random.Range(0.5f, 1.5f));
+		PickMovementStrategy(config, speedMultiplier);
 		CubeTracker.UpdateTrackedAreaSize(_movementStrategy.GetMaxStepDistance());
 		UpdateVisuals(config);
 
@@ -84,7 +84,15 @@ public class Enemy : MonoWithCachedTransform
 	private void PickMovementStrategy(EnemyConfig config, float speedMultiplier = 1f)
 	{
 		//TODO
-		_movementStrategy = new RollStrategy(CachedTransform, mesh, PathFinder, config.edgeSize, config.speedUnitsPerSecond * speedMultiplier);
+		switch (config.type)
+		{
+			case EnemyType.Simple: 
+			case EnemyType.Zigzag: 
+				_movementStrategy = new RollStrategy(CachedTransform, mesh, PathFinder, config.edgeSize,
+																		config.speedUnitsPerSecond * speedMultiplier,
+																		config.sideRollChance); 
+																	    break;
+		}
 	}
 
 	public bool OverlapsAnyPositions(IEnumerable<Vector3> positions, float otherCubeSize)

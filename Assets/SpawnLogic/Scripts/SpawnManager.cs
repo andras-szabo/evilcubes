@@ -154,17 +154,17 @@ public class SpawnManager : MonoBehaviour, IManager
 		success &= _enemyConfigsByType.TryGetValue(enemyToSpawnType, out enemyConfig);
 		success &= TryPickRandomPositionToSpawn(enemyConfig, out spawnPosition);
 
-		if (success) { DoSpawn(enemyConfig, spawnPosition); }
+		if (success) { DoSpawn(enemyConfig, spawnPosition, config.cubeSpeedMultiplier); }
 		return success;
 	}
 
-	private void DoSpawn(EnemyConfig enemyConfig, Vector3 spawnPosition)
+	private void DoSpawn(EnemyConfig enemyConfig, Vector3 spawnPosition, float enemySpeedMultiplier)
 	{
 		var rotationToFacePlayer = Quaternion.LookRotation(new Vector3(-spawnPosition.x, 0f, -spawnPosition.z), Vector3.up);
 		var nme = Instantiate<Enemy>(enemyPrefab, spawnPosition, rotationToFacePlayer);
 
 		nme.gameObject.name = string.Format("Spawnee {0}", spawnID++);
-		nme.Setup(enemyConfig);
+		nme.Setup(enemyConfig, enemySpeedMultiplier);
 
 		_spawnedEnemies.Add(nme.gameObject);
 

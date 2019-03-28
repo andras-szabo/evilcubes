@@ -6,6 +6,7 @@ public class EnemyConfig : ScriptableObject
 	public EnemyType type;
 	[Range(0.2f, 10f)] public float edgeSize;
 	[Range(0.2f, 5f)] public float speedUnitsPerSecond;
+	[Range(0f, 1f)] public float sideRollChance;
 
 	[HideInInspector]
 	public float halfBodyDiagonal;

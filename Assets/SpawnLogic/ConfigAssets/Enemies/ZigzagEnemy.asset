@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Name: ZigzagEnemy
   m_EditorClassIdentifier: 
   type: 3
-  edgeSize: 2
-  speedUnitsPerSecond: 1
-  halfBodyDiagonal: 1.7320508
+  edgeSize: 3
+  speedUnitsPerSecond: 4
+  sideRollChance: 0.25
+  halfBodyDiagonal: 2.598076

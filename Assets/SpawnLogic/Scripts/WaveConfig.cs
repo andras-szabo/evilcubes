@@ -22,7 +22,7 @@ public class WaveConfig : ScriptableObject
 	[Header("Spawn distance &c")]
 	[Range(10f, 1000f)] public float minSpawnDistanceFromPlayer;
 	[Range(10f, 1000f)] public float maxSpawnDistanceFromPlayer;
-	[Range(0.2f, 100f)] public float cubeSpeedUnitsPerSec;
+	[Range(0.2f, 5f)] public float cubeSpeedMultiplier;
 
 	private void OnValidate()
 	{

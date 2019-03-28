@@ -177,7 +177,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   seed: 2
-  testUnitDuration: 15
+  testUnitDuration: 30
 --- !u!1 &80978342
 GameObject:
   m_ObjectHideFlags: 0

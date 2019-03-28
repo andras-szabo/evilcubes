@@ -12,12 +12,12 @@ MonoBehaviour:
   m_Name: TestWave
   m_EditorClassIdentifier: 
   id: Just a test
-  spawnIntervalSeconds: 0.05
+  spawnIntervalSeconds: 0.02
   maxLiveCubeCount: 200
   spawnChanceSimple: 1
-  spawnChanceJumper: 1
-  spawnChanceZigZag: 0
+  spawnChanceJumper: 0
+  spawnChanceZigZag: 1
   titanToAppearAt: 50
   minSpawnDistanceFromPlayer: 40
   maxSpawnDistanceFromPlayer: 42
-  cubeSpeedUnitsPerSec: 10
+  cubeSpeedMultiplier: 2

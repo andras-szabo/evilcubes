@@ -85,11 +85,14 @@ public class JumpStrategy : AMovementStrategy
 public class RollStrategy : AMovementStrategy
 {
 	private RollMove _roll;
+	private float _chanceToRollSideways;
 
-	public RollStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, float edgeSize, float cubeSpeedUnitsPerSecond) :
+	public RollStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, float edgeSize, float cubeSpeedUnitsPerSecond,
+						float chanceToRollSideways = 0f) :
 				base(cachedTransform, meshToRotate, pathFinder, edgeSize, cubeSpeedUnitsPerSecond)
 	{
 		_roll = new RollMove(_cachedTransform, _meshToRotate, _pathFinder, _edgeSize, _rollAnglePerUpdate);
+		_chanceToRollSideways = chanceToRollSideways;
 	}
 
 	public override float GetMaxStepDistance()
@@ -101,28 +104,47 @@ public class RollStrategy : AMovementStrategy
 	{
 		while (true)
 		{
-			//TODO
 			yield return _roll.Execute();
+			
+			var shouldRollSideWays = Random.Range(0f, 1f) < _chanceToRollSideways;
+			if (shouldRollSideWays)
+			{
+				_roll.RollDirection = Random.Range(0f, 1f) < 0.5f ? RollMove.Direction.Left : RollMove.Direction.Right;
+			}
+			else
+			{
+				_roll.RollDirection = RollMove.Direction.Forward;
+			}
 		}
 	}
 }
 
 public abstract class AMove
 {
+	public const float PATH_CHECK_INTERVAL_SECONDS = 0.1f;
 	protected PathFinder _pathFinder;
 
-	private WaitForSeconds _pathCheckInterval = new WaitForSeconds(0.1f);
+	private WaitForSeconds _pathCheckInterval = new WaitForSeconds(PATH_CHECK_INTERVAL_SECONDS);
 
 	protected int frameCounter;
 
-	protected IEnumerator WaitUntilPathFreeRoutine(List<Vector3> path)
+	protected IEnumerator WaitUntilPathFreeOrTimeOutRoutine(List<Vector3> path, float timeOut = -1f)
 	{
-		while (!_pathFinder.IsPathFree(path))
+		var elapsed = 0f;
+		while (!_pathFinder.IsPathFree(path) && (timeOut < 0f || elapsed <= timeOut))
 		{
 			yield return _pathCheckInterval;
+			elapsed += PATH_CHECK_INTERVAL_SECONDS;
 		}
 
-		_pathFinder.Path = path;
+		if (timeOut <= elapsed)
+		{
+			path.Clear();
+		}
+		else
+		{
+			_pathFinder.Path = path;
+		}
 	}
 }
 
@@ -143,7 +165,7 @@ public class RollMove : AMove
 	private readonly float _edgeSize;
 	private readonly float _rollAnglePerUpdate;
 
-	private Direction _direction = Direction.Forward;
+	public Direction RollDirection { get; set; }
 
 	public RollMove(Transform cachedTransform, Transform mesh, PathFinder pathFinder, float edgeSize, float rollAnglePerUpdate)
 	{
@@ -152,20 +174,26 @@ public class RollMove : AMove
 		_edgeSize = edgeSize;
 		_rollAnglePerUpdate = rollAnglePerUpdate;
 		_pathFinder = pathFinder;
+
+		RollDirection = Direction.Forward;
 	}
 
 	public IEnumerator Execute()
 	{
-		var plannedPath = CalculatePath(_direction, _edgeSize);
-		yield return WaitUntilPathFreeRoutine(plannedPath);
-		//Debug.LogFormat("{0} executing at: {1}", _cachedTransform.gameObject.name, Time.frameCount);
+		var plannedPath = CalculatePath(RollDirection, _edgeSize);
+		yield return WaitUntilPathFreeOrTimeOutRoutine(plannedPath, 2f);
+
+		if (plannedPath.Count == 0)
+		{
+			yield break;
+		}
 
 		var halfSize = _edgeSize / 2f;
 		Vector3 axisToRotateAround;
-		var fromEdgeToCentre = CalculateVectorFromEdgeToCentre(_direction, halfSize, out axisToRotateAround);
+		var fromEdgeToCentre = CalculateVectorFromEdgeToCentre(RollDirection, halfSize, out axisToRotateAround);
 
 		var rollAngle = _rollAnglePerUpdate;
-		if (_direction == Direction.Back || _direction == Direction.Right)
+		if (RollDirection == Direction.Back || RollDirection == Direction.Right)
 		{
 			rollAngle *= -1f;
 		}
@@ -175,11 +203,17 @@ public class RollMove : AMove
 		var elapsed = 0f;
 		var timeStep = Time.fixedDeltaTime;
 
-		while (_rollAnglePerUpdate > 0f && anglesRotated < 90f)
+		Vector3 meshRotationAxis = _cachedTransform.right;
+		if (RollDirection == Direction.Right || RollDirection == Direction.Left)
+		{
+			meshRotationAxis = _cachedTransform.forward;
+		}
+
+		while (_rollAnglePerUpdate > 0f && Mathf.Abs(anglesRotated) < 90f)
 		{
 			elapsed += Time.deltaTime;
 
-			while (elapsed > timeStep && anglesRotated < 90f)
+			while (elapsed > timeStep && Mathf.Abs(anglesRotated) < 90f)
 			{
 				elapsed -= timeStep;
 
@@ -195,17 +229,10 @@ public class RollMove : AMove
 					else { rollAngle -= overRotation; }
 				}
 
-				if (_direction == Direction.Forward || _direction == Direction.Back)
-				{
-					_meshToRotate.Rotate(new Vector3(rollAngle, 0f, 0f), Space.Self);
-				}
-				else
-				{
-					_meshToRotate.Rotate(new Vector3(0f, 0f, rollAngle), Space.Self);
-				}
+				_meshToRotate.Rotate(meshRotationAxis, rollAngle, Space.World);
 			}
 
-			if (_direction == Direction.Left || _direction == Direction.Right)
+			if (RollDirection == Direction.Left || RollDirection == Direction.Right)
 			{
 				YawToTarget(halfSize);
 			}
@@ -215,13 +242,12 @@ public class RollMove : AMove
 
 		_cachedTransform.position = new Vector3(_cachedTransform.position.x, halfSize, _cachedTransform.position.z);
 
-		if (_direction == Direction.Left || _direction == Direction.Right)
+		if (RollDirection == Direction.Left || RollDirection == Direction.Right)
 		{
 			YawToTarget(halfSize);
 		}
 
 		_pathFinder.Path.Clear();
-		//Debug.LogWarningFormat("{0} clears at {1}", _cachedTransform.gameObject.name, Time.frameCount);
 	}
 
 	private void YawToTarget(float cubeCentreHeight)
@@ -238,8 +264,8 @@ public class RollMove : AMove
 		{
 			case Direction.Forward: axisToRotateAround = _cachedTransform.right; return centre - _cachedTransform.forward * halfSize;
 			case Direction.Back: axisToRotateAround = _cachedTransform.right; return centre + _cachedTransform.forward * halfSize;
-			case Direction.Left: axisToRotateAround = _cachedTransform.forward; return _cachedTransform.right * halfSize;
-			case Direction.Right: axisToRotateAround = _cachedTransform.forward; return -_cachedTransform.right * halfSize;
+			case Direction.Left: axisToRotateAround = _cachedTransform.forward; return centre + _cachedTransform.right * halfSize;
+			case Direction.Right: axisToRotateAround = _cachedTransform.forward; return centre -_cachedTransform.right * halfSize;
 		}
 
 		throw new System.NotImplementedException("Unknown rotation direction");
@@ -294,7 +320,7 @@ public class JumpMove : AMove
 	{
 		CalculateTrajectory(_jumpForce, _jumpAngle);
 		var plannedPath = _trajectory.GetRange(1, _trajectory.Count - 1);
-		yield return WaitUntilPathFreeRoutine(plannedPath);
+		yield return WaitUntilPathFreeOrTimeOutRoutine(plannedPath);
 
 		var elapsedTime = 0f;
 		var startingPoint = _cachedTransform.position;
