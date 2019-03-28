@@ -10,7 +10,8 @@ public abstract class AMovementStrategy
 	protected float _edgeSize;
 	protected float _rollAnglePerUpdate;
 
-	public AMovementStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, float edgeSize, float cubeSpeedUnitsPerSecond)
+	public AMovementStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, 
+							 float edgeSize, float cubeSpeedUnitsPerSecond)
 	{
 		_cachedTransform = cachedTransform;
 		_meshToRotate = meshToRotate;
@@ -37,18 +38,21 @@ public class JumpStrategy : AMovementStrategy
 	private float _jumpDistance;
 	private float _jumpChance;
 
-	public JumpStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, float edgeSize, float cubeSpeedUnitsPerSecond) :
-		base(cachedTransform, meshToRotate, pathFinder, edgeSize, cubeSpeedUnitsPerSecond)
-	{
+	private float _maxJumpDistance;
 
-		_jump = new JumpMove();
-		//_roll = new RollMove(_cachedTransform, _meshToRotate, _edgeSize, _rollAnglePerUpdate);
+	public JumpStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, EnemyConfig config, float speedMultiplier):
+		base(cachedTransform, meshToRotate, pathFinder, config.edgeSize, config.speedUnitsPerSecond * speedMultiplier)
+	{
+		_jump = new JumpMove(_cachedTransform, _meshToRotate, _pathFinder, config.jumpForce, config.jumpAngle);
+		_roll = new RollMove(_cachedTransform, _meshToRotate, _pathFinder, _edgeSize, _rollAnglePerUpdate);
+
+		_maxJumpDistance = _jump.CalculateMaxJumpDistance();
+		_jumpChance = config.jumpChance;
 	}
 
 	public override float GetMaxStepDistance()
 	{
-		//TODO FIX
-		return _edgeSize;
+		return _maxJumpDistance;
 	}
 
 	public override IEnumerator RunRoutine()
@@ -73,7 +77,7 @@ public class JumpStrategy : AMovementStrategy
 
 	private bool IsPlayerOutOfJumpDistance()
 	{
-		return Vector3.SqrMagnitude(-_cachedTransform.position) > _jumpDistance;
+		return Vector3.SqrMagnitude(-_cachedTransform.position) > (_jumpDistance * _jumpDistance);
 	}
 
 	private bool HasRandomChanceToJump()
@@ -87,12 +91,11 @@ public class RollStrategy : AMovementStrategy
 	private RollMove _roll;
 	private float _chanceToRollSideways;
 
-	public RollStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, float edgeSize, float cubeSpeedUnitsPerSecond,
-						float chanceToRollSideways = 0f) :
-				base(cachedTransform, meshToRotate, pathFinder, edgeSize, cubeSpeedUnitsPerSecond)
+	public RollStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, EnemyConfig config, float speedMultiplier):
+				base(cachedTransform, meshToRotate, pathFinder, config.edgeSize, config.speedUnitsPerSecond * speedMultiplier)
 	{
 		_roll = new RollMove(_cachedTransform, _meshToRotate, _pathFinder, _edgeSize, _rollAnglePerUpdate);
-		_chanceToRollSideways = chanceToRollSideways;
+		_chanceToRollSideways = config.sideRollChance;
 	}
 
 	public override float GetMaxStepDistance()
@@ -305,16 +308,27 @@ public class JumpMove : AMove
 {
 	private float _jumpForce;
 	private float _jumpAngle;
-
-	private float _jumpDuration;
-	private Vector3 _initialVelocity;
 	private Transform _cachedTransform;
 	private Transform _meshToRotate;
-	private bool _jumpForward;
-	private List<Vector3> _trajectory = new List<Vector3>();
 
+	private bool _jumpForward;
+
+	private List<Vector3> _trajectory = new List<Vector3>();
+	private float _jumpDuration;
+	private Vector3 _initialVelocity;
 	private const int _trajectorySectionCount = 16;
 	private int _previousRemainingSectionCount;
+
+	public JumpMove(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, float jumpForce, float jumpAngle)
+	{
+		_jumpForce = jumpForce;
+		_jumpAngle = jumpAngle;
+		_jumpForward = true;
+
+		_cachedTransform = cachedTransform;
+		_meshToRotate = meshToRotate;
+		_pathFinder = pathFinder;
+	}
 
 	public IEnumerator Execute()
 	{
@@ -345,14 +359,25 @@ public class JumpMove : AMove
 		_pathFinder.Path.Clear();
 	}
 
+	public float CalculateMaxJumpDistance()
+	{
+		var jumpDirection = Quaternion.AngleAxis(-_jumpAngle, Vector3.right) * Vector3.forward;
+		var initialVelocity = jumpDirection * _jumpForce;
+		var maxJumpDistance = -2f * initialVelocity.y * initialVelocity.z / Physics.gravity.y;
+
+		return maxJumpDistance;
+	}
+
 	private void CalculateTrajectory(float jForce, float jumpAngle)
 	{
 		var g = Physics.gravity.y;
 
 		jumpAngle = _jumpForward ? -jumpAngle : 180f + jumpAngle;
 
-		var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(jumpAngle, _cachedTransform.right));
-		_initialVelocity = (rotation.MultiplyVector(_cachedTransform.forward)).normalized * jForce;
+		var jumpDirection = Quaternion.AngleAxis(jumpAngle, _cachedTransform.right) * _cachedTransform.forward;
+		_initialVelocity = jumpDirection * jForce;
+		//var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(jumpAngle, _cachedTransform.right));
+		//_initialVelocity = (rotation.MultiplyVector(_cachedTransform.forward)).normalized * jForce;
 
 		_jumpDuration = -2f * _initialVelocity.y / g;
 

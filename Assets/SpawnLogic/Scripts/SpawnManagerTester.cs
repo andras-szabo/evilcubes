@@ -20,7 +20,7 @@ public class SpawnManagerTester : MonoBehaviour
 		while (true)
 		{
 			Debug.Log("Starting to spawn with seed " + (++seed));
-			Random.InitState(seed++);	
+			Random.InitState(seed);	
 
 			spawnManager.StartSpawning();
 

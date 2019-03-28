@@ -14,4 +14,8 @@ MonoBehaviour:
   type: 2
   edgeSize: 1
   speedUnitsPerSecond: 5
+  sideRollChance: 0
+  jumpForce: 10
+  jumpAngle: 80
+  jumpChance: 0.25
   halfBodyDiagonal: 0.8660254

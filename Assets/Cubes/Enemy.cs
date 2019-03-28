@@ -24,6 +24,7 @@ public class Enemy : MonoWithCachedTransform
 	}
 
 	private AMovementStrategy _movementStrategy;
+	private bool _isSetup;
 
 	private void Awake()
 	{
@@ -42,13 +43,15 @@ public class Enemy : MonoWithCachedTransform
 		CubeTracker.UpdateTrackedAreaSize(_movementStrategy.GetMaxStepDistance());
 		UpdateVisuals(config);
 
+		_isSetup = true;
 		IsSpawning = true;
 		StartCoroutine(CheckPathAndStartMovingRoutine());	
 	}
 
+	//TODO
 	private void LateUpdate()
 	{
-		if (!IsSpawning && PathFinder.AmIOverlappingAnotherCube(mesh.localScale.x / 2f))
+		if (_isSetup && !IsSpawning && PathFinder.AmIOverlappingAnotherCube(mesh.localScale.x / 2f))
 		{
 			Debug.LogError(gameObject.name);
 			Debug.Break();
@@ -87,11 +90,14 @@ public class Enemy : MonoWithCachedTransform
 		switch (config.type)
 		{
 			case EnemyType.Simple: 
-			case EnemyType.Zigzag: 
-				_movementStrategy = new RollStrategy(CachedTransform, mesh, PathFinder, config.edgeSize,
-																		config.speedUnitsPerSecond * speedMultiplier,
-																		config.sideRollChance); 
-																	    break;
+			case EnemyType.Zigzag:
+			case EnemyType.Titan:
+				_movementStrategy = new RollStrategy(CachedTransform, mesh, PathFinder, config, speedMultiplier); 
+				break;
+
+			case EnemyType.Jumper:
+				_movementStrategy = new JumpStrategy(CachedTransform, mesh, PathFinder, config, speedMultiplier);
+				break;
 		}
 	}
 
@@ -102,7 +108,7 @@ public class Enemy : MonoWithCachedTransform
 
 	private void OnDrawGizmos()
 	{
-		PathFinder.OnDrawGizmos();
+		PathFinder?.OnDrawGizmos();
 	}
 
 }
