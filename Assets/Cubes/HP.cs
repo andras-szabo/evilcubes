@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public struct HPInfo
 {
@@ -48,7 +46,6 @@ public class HP : MonoBehaviour, IHittable
 
 	public void Hit(Vector3 position, int damage)
 	{
-		//TODO: deal with hit visualisation
 		if (hitPoints >= 0 && damage > 0)
 		{
 			hitPoints = System.Math.Max(0, hitPoints - damage);

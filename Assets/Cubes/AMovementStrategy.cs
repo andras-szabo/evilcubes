@@ -237,7 +237,7 @@ public class RollMove : AMove
 
 			if (RollDirection == Direction.Left || RollDirection == Direction.Right)
 			{
-				YawToTarget(halfSize);
+				//YawToTarget(halfSize);
 			}
 
 			yield return null;

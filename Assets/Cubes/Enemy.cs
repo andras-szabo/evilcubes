@@ -10,6 +10,7 @@ public class Enemy : MonoWithCachedTransform
 
 	public Transform mesh;
 	public Renderer meshRenderer;
+
 	public PathFinder PathFinder { get; private set; }
 
 	public bool IsSpawning { get; private set; }
@@ -31,9 +32,29 @@ public class Enemy : MonoWithCachedTransform
 		meshRenderer.enabled = false;
 	}
 
+	private void Start()
+	{
+		var hp = mesh.GetComponent<HP>();
+		if (hp != null)
+		{
+			hp.destroyWhenHPzero = false;
+			hp.OnHitPointsChanged += HandleHpChanged;
+		}
+	}
+	
+	//TODO
+	private void LateUpdate()
+	{
+		if (_isSetup && !IsSpawning && PathFinder.AmIOverlappingAnotherCube(mesh.localScale.x / 2f))
+		{
+			Debug.LogError(gameObject.name);
+			Debug.Break();
+		}
+	}
+
 	private void OnDestroy()
 	{
-		OnRemoved?.Invoke(this);	
+		OnRemoved?.Invoke(this);
 	}
 
 	public void Setup(EnemyConfig config, float speedMultiplier = 1f)
@@ -48,13 +69,11 @@ public class Enemy : MonoWithCachedTransform
 		StartCoroutine(CheckPathAndStartMovingRoutine());	
 	}
 
-	//TODO
-	private void LateUpdate()
+	private void HandleHpChanged(HPInfo hp)
 	{
-		if (_isSetup && !IsSpawning && PathFinder.AmIOverlappingAnotherCube(mesh.localScale.x / 2f))
+		if (hp.current <= 0f)
 		{
-			Debug.LogError(gameObject.name);
-			Debug.Break();
+			Destroy(this.gameObject);
 		}
 	}
 

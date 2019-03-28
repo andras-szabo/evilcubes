@@ -22,6 +22,8 @@ GameObject:
   - component: {fileID: 33430383931504962}
   - component: {fileID: 23880977717871490}
   - component: {fileID: 65131429688309330}
+  - component: {fileID: 114220762980155122}
+  - component: {fileID: 114961871198728960}
   m_Layer: 10
   m_Name: TestCubeMesh
   m_TagString: Untagged
@@ -90,7 +92,7 @@ MeshRenderer:
   m_ReflectionProbeUsage: 1
   m_RenderingLayerMask: 4294967295
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: b101918241953c342a60b6d6568ba280, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -144,6 +146,19 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &114220762980155122
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1479261930971540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 162c3f91411030b4398f3a0fbf4a2e95, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hitPoints: 100
+  destroyWhenHPzero: 1
 --- !u!114 &114535298744997676
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -157,6 +172,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mesh: {fileID: 4048193363227510}
   meshRenderer: {fileID: 23880977717871490}
+--- !u!114 &114961871198728960
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1479261930971540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e571482014483047a6b013a484ac1e7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hpToObserve: {fileID: 114220762980155122}
+  color: {r: 1, g: 0.33732823, b: 0, a: 1}
 --- !u!114 &114977923216446314
 MonoBehaviour:
   m_ObjectHideFlags: 1
