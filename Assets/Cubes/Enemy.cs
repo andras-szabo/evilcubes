@@ -7,6 +7,7 @@ using UnityEngine;
 public class Enemy : MonoWithCachedTransform
 {
 	public event Action<Enemy> OnRemoved;
+	public event Action<Enemy> OnFinishedSpawning;
 
 	public DealDamageOnImpact dealDamageOnImpact;
 
@@ -15,6 +16,7 @@ public class Enemy : MonoWithCachedTransform
 	public PathFinder PathFinder { get; private set; }
 	public bool IsSpawning { get; private set; }
 	public float HalfEdgeSize { get; private set; }
+	public EnemyType Type { get; private set; }
 
 	private Transform _bodyTransform;
 	private Transform BodyTransform
@@ -67,6 +69,7 @@ public class Enemy : MonoWithCachedTransform
 		SetupVisuals(config);
 
 		HalfEdgeSize = config.edgeSize / 2f;
+		Type = config.type;
 		_isSetup = true;
 
 		IsSpawning = true;
@@ -123,6 +126,7 @@ public class Enemy : MonoWithCachedTransform
 		{
 			materialFader.MeshRenderer.enabled = true;
 			IsSpawning = false;
+			OnFinishedSpawning?.Invoke(this);
 			yield return _movementStrategy.RunRoutine();
 		}
 	}

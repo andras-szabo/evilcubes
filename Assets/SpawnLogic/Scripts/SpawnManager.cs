@@ -1,10 +1,28 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections;
 using UnityEngine;
+
+public struct EnemyInfo
+{
+	public EnemyInfo(EnemyType t, int live, int dead)
+	{
+		affectedEnemyType = t;
+		currentLiveEnemyCount = live;
+		currentDeadEnemyCount = dead;
+	}
+
+	public EnemyType affectedEnemyType;
+	public int currentLiveEnemyCount;
+	public int currentDeadEnemyCount;
+}
 
 public class SpawnManager : MonoBehaviour, IManager
 {
 	public const float MAX_SPAWN_COUNT_PER_FRAME = 12f;
+
+	public event Action<EnemyInfo> OnEnemyFinishedSpawning;
+	public event Action<EnemyInfo> OnEnemyRemoved;
 
 	[HideInInspector]
 	public EnemyType[] spawnableEnemies = new EnemyType[]
@@ -21,14 +39,15 @@ public class SpawnManager : MonoBehaviour, IManager
 	public EnemyConfig[] enemyConfigs;
 	public Enemy enemyPrefab;
 
-	//TODO cleanup when
 	public bool startSpawningOnStart;
-	private List<GameObject> _spawnedEnemies = new List<GameObject>();
+	private Dictionary<int, GameObject> _spawnedEnemiesByUID = new Dictionary<int, GameObject>();
 
 	private WaveConfig _activeConfig;
 	private int _activeWaveIndex;
-	private int _eliminatedCubeCount;
+
 	private int _liveEnemyCount;
+	private int _eliminatedEnemyCount;
+
 	private float _elapsedSinceLastSpawn;
 	private bool _spawnCancelToken;
 	private Coroutine _spawnRoutine;
@@ -132,13 +151,12 @@ public class SpawnManager : MonoBehaviour, IManager
 
 	public void Cleanup()
 	{
-		foreach (var spawnedEnemy in _spawnedEnemies)
+		foreach (var spawnedEnemy in _spawnedEnemiesByUID.Values)
 		{
 			Destroy(spawnedEnemy);
 		}
 
-		_spawnedEnemies.Clear();
-
+		_spawnedEnemiesByUID.Clear();
 		_liveEnemyCount = 0;
 		spawnID = 0;
 	}
@@ -166,10 +184,30 @@ public class SpawnManager : MonoBehaviour, IManager
 		nme.gameObject.name = string.Format("Spawnee {0}", spawnID++);
 		nme.Setup(enemyConfig, enemySpeedMultiplier);
 
-		_spawnedEnemies.Add(nme.gameObject);
+		_spawnedEnemiesByUID.Add(nme.gameObject.GetInstanceID(), nme.gameObject);
 
-		//TODO: Let the enemy do this when it subscribes
+		nme.OnFinishedSpawning += HandleEnemyFinishedSpawning;
+		nme.OnRemoved += HandleEnemyRemoved;
+	}
+
+	private void HandleEnemyFinishedSpawning(Enemy enemy)
+	{
 		_liveEnemyCount++;
+		OnEnemyFinishedSpawning?.Invoke(new EnemyInfo(enemy.Type, _liveEnemyCount, _eliminatedEnemyCount));
+	}
+
+	private void HandleEnemyRemoved(Enemy enemy)
+	{
+		enemy.OnRemoved -= HandleEnemyRemoved;
+		_spawnedEnemiesByUID.Remove(enemy.gameObject.GetInstanceID());
+
+		if (!enemy.IsSpawning)
+		{
+			_liveEnemyCount--;
+			_eliminatedEnemyCount++;
+
+			OnEnemyRemoved?.Invoke(new EnemyInfo(enemy.Type, _liveEnemyCount, _eliminatedEnemyCount));
+		}
 	}
 
 	private bool TryPickRandomPositionToSpawn(EnemyConfig enemyConfig, out Vector3 position)
@@ -180,8 +218,8 @@ public class SpawnManager : MonoBehaviour, IManager
 		{
 			// This is assuming the player is in the origin.
 
-			var distance = Random.Range(_activeConfig.minSpawnDistanceFromPlayer, _activeConfig.maxSpawnDistanceFromPlayer);
-			var angle = Random.Range(0f, 360f) * Mathf.PI / 180f;
+			var distance = UnityEngine.Random.Range(_activeConfig.minSpawnDistanceFromPlayer, _activeConfig.maxSpawnDistanceFromPlayer);
+			var angle = UnityEngine.Random.Range(0f, 360f) * Mathf.PI / 180f;
 			var sin = Mathf.Sin(angle) * distance;
 			var cos = Mathf.Cos(angle) * distance;
 
@@ -219,14 +257,14 @@ public class SpawnManager : MonoBehaviour, IManager
 		var spawnableEnemyCount = enemiesByCumulativeSpawnChance.Count;
 		if (spawnableEnemyCount < 1)
 		{
-			return (EnemyType)Random.Range((int)EnemyType.Simple, (int)EnemyType.Zigzag + 1);
+			return (EnemyType)UnityEngine.Random.Range((int)EnemyType.Simple, (int)EnemyType.Zigzag + 1);
 		}
 
 		float diceRoll = chanceOverride;
 
 		if (chanceOverride < 0f)
 		{
-			diceRoll = Random.Range(0f, enemiesByCumulativeSpawnChance[spawnableEnemyCount - 1].spawnChance);
+			diceRoll = UnityEngine.Random.Range(0f, enemiesByCumulativeSpawnChance[spawnableEnemyCount - 1].spawnChance);
 		}
 
 		foreach (var enemy in enemiesByCumulativeSpawnChance)
@@ -240,15 +278,11 @@ public class SpawnManager : MonoBehaviour, IManager
 		return EnemyType.Simple;
 	}
 
-	public void ResetCurrentWave()
-	{
-	}
-
 	public void Reset()
 	{
 		_activeConfig = null;
 		_activeWaveIndex = 0;
-		_eliminatedCubeCount = 0;
+		_eliminatedEnemyCount = 0;
 		_elapsedSinceLastSpawn = 0f;
 		_liveEnemyCount = 0;
 		_spawnCancelToken = false;
