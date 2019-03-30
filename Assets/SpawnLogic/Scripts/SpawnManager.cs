@@ -255,10 +255,12 @@ public class SpawnManager : MonoBehaviour, IManager
 		return false;
 	}
 
+	private Collider[] overlappingColliders = new Collider[128];
+
 	private bool CanSpawnEnemyAt(EnemyConfig config, Vector3 position)
 	{
-		var colliders = Physics.OverlapSphere(position, config.halfBodyDiagonal + 0.1f, _enemyLayerMask);
-		return colliders == null || colliders.Length < 1;
+		var overlapCount = Physics.OverlapSphereNonAlloc(position, config.halfBodyDiagonal + 0.1f, overlappingColliders, _enemyLayerMask);
+		return overlapCount < 1;
 	}
 
 	public static EnemyType PickRandomEnemyToSpawn(List<EnemyWithCumulativeSpawnChance> enemiesByCumulativeSpawnChance,

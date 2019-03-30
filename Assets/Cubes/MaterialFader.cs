@@ -22,10 +22,9 @@ public class MaterialFader : MonoBehaviour
 
 	private void Start()
 	{
-		ObserveHP();
-
 		if (selfSetup)
 		{
+			ObserveHP();
 			SetupRendererAndStartColor(defaultColor);
 		}
 	}

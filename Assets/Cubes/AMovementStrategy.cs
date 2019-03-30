@@ -124,10 +124,10 @@ public abstract class AMove
 {
 	public const float PATH_CHECK_INTERVAL_SECONDS = 0.1f;
 	protected PathFinder _pathFinder;
+	protected List<Vector3> _plannedPath;
 
 	private WaitForSeconds _pathCheckInterval = new WaitForSeconds(PATH_CHECK_INTERVAL_SECONDS);
-
-	protected int frameCounter;
+	protected bool _lastPathFindWasSuccessful;
 
 	protected IEnumerator WaitUntilPathFreeOrTimeOutRoutine(List<Vector3> path, float timeOut = -1f)
 	{
@@ -140,11 +140,12 @@ public abstract class AMove
 
 		if (timeOut <= elapsed)
 		{
-			path.Clear();
+			_lastPathFindWasSuccessful = false;
 		}
 		else
 		{
 			_pathFinder.Path = path;
+			_lastPathFindWasSuccessful = true;
 		}
 	}
 }
@@ -175,16 +176,17 @@ public class RollMove : AMove
 		_edgeSize = edgeSize;
 		_rollAnglePerUpdate = rollAnglePerUpdate;
 		_pathFinder = pathFinder;
+		_plannedPath = new List<Vector3> { Vector3.zero };
 
 		RollDirection = Direction.Forward;
 	}
 
 	public IEnumerator Execute()
 	{
-		var plannedPath = CalculatePath(RollDirection, _edgeSize);
-		yield return WaitUntilPathFreeOrTimeOutRoutine(plannedPath, 2f);
+		CalculatePath(RollDirection, _edgeSize);
+		yield return WaitUntilPathFreeOrTimeOutRoutine(_plannedPath, 2f);
 
-		if (plannedPath.Count == 0)
+		if (!_lastPathFindWasSuccessful)
 		{
 			yield break;
 		}
@@ -233,11 +235,6 @@ public class RollMove : AMove
 				_meshToRotate.Rotate(meshRotationAxis, rollAngle, Space.World);
 			}
 
-			if (RollDirection == Direction.Left || RollDirection == Direction.Right)
-			{
-				//YawToTarget(halfSize);
-			}
-
 			yield return null;
 		}
 
@@ -248,7 +245,7 @@ public class RollMove : AMove
 			YawToTarget(halfSize);
 		}
 
-		_pathFinder.Path.Clear();
+		_pathFinder.Path = null;
 	}
 
 	private void YawToTarget(float cubeCentreHeight)
@@ -284,7 +281,8 @@ public class RollMove : AMove
 			case Direction.Right: target = _cachedTransform.position + _cachedTransform.right * edgeSize; break;
 		}
 
-		return new List<Vector3> { target };
+		_plannedPath[0] = target;
+		return _plannedPath;
 	}
 
 	private Matrix4x4 MatrixToRotateAboutAxisByAngles(Vector3 n, float angle)
@@ -311,10 +309,11 @@ public class JumpMove : AMove
 
 	private bool _jumpForward;
 
-	private List<Vector3> _trajectory = new List<Vector3>();
 	private float _jumpDuration;
 	private Vector3 _initialVelocity;
 	private const int _trajectorySectionCount = 16;
+	private List<Vector3> _trajectory;
+
 	private int _previousRemainingSectionCount;
 
 	public JumpMove(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, float jumpForce, float jumpAngle)
@@ -326,6 +325,8 @@ public class JumpMove : AMove
 		_cachedTransform = cachedTransform;
 		_meshToRotate = meshToRotate;
 		_pathFinder = pathFinder;
+
+		_trajectory = new List<Vector3>(_trajectorySectionCount);
 	}
 
 	public IEnumerator Execute()
@@ -354,7 +355,7 @@ public class JumpMove : AMove
 		}
 
 		_cachedTransform.position = endPoint;
-		_pathFinder.Path.Clear();
+		_pathFinder.Path = null;
 	}
 
 	public float CalculateMaxJumpDistance()
@@ -374,12 +375,9 @@ public class JumpMove : AMove
 
 		var jumpDirection = Quaternion.AngleAxis(jumpAngle, _cachedTransform.right) * _cachedTransform.forward;
 		_initialVelocity = jumpDirection * jForce;
-		//var rotation = Matrix4x4.Rotate(Quaternion.AngleAxis(jumpAngle, _cachedTransform.right));
-		//_initialVelocity = (rotation.MultiplyVector(_cachedTransform.forward)).normalized * jForce;
-
 		_jumpDuration = -2f * _initialVelocity.y / g;
 
-		_trajectory = new List<Vector3>();
+		_trajectory.Clear();
 
 		for (int i = 1; i <= _trajectorySectionCount; ++i)
 		{

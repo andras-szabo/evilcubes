@@ -136,7 +136,7 @@ public class Enemy : MonoWithCachedTransform
 		}
 	}
 
-	public bool OverlapsAnyPositions(IEnumerable<Vector3> positions, float otherCubeSize)
+	public bool OverlapsAnyPositions(List<Vector3> positions, float otherCubeSize)
 	{
 		return PathFinder.OverlapsAnyPositions(positions, otherCubeSize);
 	}

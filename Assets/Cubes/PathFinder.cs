@@ -6,8 +6,6 @@ public class PathFinder
 	public List<Vector3> Path { get; set; }
 	public List<Vector3> ProvisionalPath { get; private set; }
 
-	//TODO - remove debug
-	public List<string> checkedCubes = new List<string>();
 	public int lastFrameCheck;
 
 	private NearbyCubeTracker _nearbyCubeTracker;
@@ -20,7 +18,6 @@ public class PathFinder
 		_nearbyCubeTracker = tracker;
 		_mySize = cubeHalfDiagonal;
 
-		Path = new List<Vector3>();
 		ProvisionalPath = new List<Vector3>();
 	}
 
@@ -52,12 +49,6 @@ public class PathFinder
 		{
 			if (otherCube.OverlapsAnyPositions(path, _mySize))
 			{
-				//TODO remove
-				//Debug.LogWarningFormat("{0} last checked for, in frame {1}:", otherCube.gameObject.name, otherCube.PathFinder.lastFrameCheck);
-				//foreach (var other in otherCube.PathFinder.checkedCubes)
-				//{
-				//	Debug.LogWarning(other);
-				//}
 				name = otherCube.gameObject.name;
 				return true;
 			}
@@ -67,16 +58,11 @@ public class PathFinder
 		return false;
 	}
 
-	public bool IsPathFree(IEnumerable<Vector3> path)
+	public bool IsPathFree(List<Vector3> path)
 	{
 		ProvisionalPath.Clear();
 		ProvisionalPath.AddRange(path);
 
-		checkedCubes.Clear();
-		foreach (var otherCube in _nearbyCubeTracker.OtherCubesNearby)
-		{
-			checkedCubes.Add(otherCube.gameObject.name);
-		}
 		lastFrameCheck = Time.frameCount;
 
 		foreach (var otherCube in _nearbyCubeTracker.OtherCubesNearby)
@@ -90,7 +76,7 @@ public class PathFinder
 		return true;
 	}
 
-	public bool OverlapsAnyPositions(IEnumerable<Vector3> positions, float otherCubeSize)
+	public bool OverlapsAnyPositions(List<Vector3> positions, float otherCubeSize)
 	{
 		var distanceLimitSquared = Mathf.Pow(otherCubeSize + _mySize, 2f);
 		foreach (var pos in positions)
@@ -100,11 +86,14 @@ public class PathFinder
 				return true;
 			}
 
-			foreach (var pathPoint in Path)
+			if (Path != null)
 			{
-				if (Vector3.SqrMagnitude(pathPoint - pos) <= distanceLimitSquared)
+				foreach (var pathPoint in Path)
 				{
-					return true;
+					if (Vector3.SqrMagnitude(pathPoint - pos) <= distanceLimitSquared)
+					{
+						return true;
+					}
 				}
 			}
 		}
@@ -116,7 +105,7 @@ public class PathFinder
 	{
 		if (Application.isPlaying)
 		{
-			if (Path.Count > 0)
+			if (Path != null && Path.Count > 0)
 			{
 				Gizmos.color = Color.green;
 				foreach (var pos in Path)
