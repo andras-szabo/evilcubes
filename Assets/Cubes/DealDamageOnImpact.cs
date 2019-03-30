@@ -1,6 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
+[RequireComponent(typeof(BoxCollider))]
 public class DealDamageOnImpact : MonoBehaviour
 {
 	public event Action OnImpact;
@@ -8,6 +9,15 @@ public class DealDamageOnImpact : MonoBehaviour
 	public bool destroySelfOnImpact;
 	public int damage;
 	private bool _hasDealtDamage;
+
+	private BoxCollider _collider;
+	public BoxCollider BoxCollider
+	{
+		get
+		{
+			return _collider ?? (_collider = GetComponent<BoxCollider>());
+		}
+	}
 
 	private void OnEnable()
 	{

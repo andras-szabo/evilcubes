@@ -30,6 +30,12 @@ public class MaterialFader : MonoBehaviour
 		}
 	}
 
+	public void SetupHPToObserve(HP hp)
+	{
+		hpToObserve = hp;
+		ObserveHP();
+	}
+
 	private void ObserveHP()
 	{
 		if (hpToObserve != null)

@@ -133,7 +133,7 @@ public class SpawnManager : MonoBehaviour, IManager
 			{
 				for (int i = 0; i < (int)idealSpawnCount; ++i)
 				{
-					if (_liveEnemyCount < _activeConfig.maxLiveCubeCount)
+					if (_spawnedEnemiesByUID.Count < _activeConfig.maxLiveCubeCount)
 					{
 						if (TrySpawnNewEnemy(_activeConfig, _cumulativeSpawnChances))
 						{

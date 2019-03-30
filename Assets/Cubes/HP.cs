@@ -27,6 +27,12 @@ public class HP : MonoBehaviour, IHittable
 		_startingHP = hitPoints;
 	}
 
+	public void SetStartingHP(int hp)
+	{
+		hitPoints = hp;
+		_startingHP = hp;
+	}
+
 	private void Start()
 	{
 		var hitManager = ManagerLocator.TryGet<HitManager>();

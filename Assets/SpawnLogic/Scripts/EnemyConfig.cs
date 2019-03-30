@@ -23,15 +23,27 @@ public class EnemyConfig : ScriptableObject
 
 	[Header("Looks")]
 	public Color color;
+	[Tooltip("In case you'd like the enemy to be composed of smaller cubes")]
+	[Range(1, 5)] public int sectionCount;
 
 	[HideInInspector]
 	public float halfBodyDiagonal;
+
+	[HideInInspector]
+	public int composingPartCount;
+
+	public int CalculateHPPerComposingPart()
+	{
+		return (int)Mathf.Max(1, hitPoints / composingPartCount);
+	}
 
 	private void OnValidate()
 	{
 		halfBodyDiagonal = Mathf.Sqrt(3f) * edgeSize / 2f;
 		edgeSize = Mathf.Max(0.2f, edgeSize);
 		hitPoints = Mathf.Max(1, hitPoints);
+		sectionCount = Mathf.Max(1, sectionCount);
+		composingPartCount = (int) Mathf.Pow(sectionCount, 3);
 		speedUnitsPerSecond = Mathf.Max(0.2f, speedUnitsPerSecond);
 	}
 }

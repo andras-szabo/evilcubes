@@ -73,7 +73,7 @@ public class WeaponController : MonoWithCachedTransform
 
 	private void Awake()
 	{
-		_enemyLayerMask = LayerMask.GetMask("EvilCubes");
+		_enemyLayerMask = LayerMask.GetMask("EvilCubeBodyParts");
 		
 		_weaponStates = new WeaponState[configs.Length];
 		for (int i = 0; i < configs.Length; ++i)

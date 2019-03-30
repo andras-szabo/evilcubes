@@ -821,7 +821,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: a11e0b9453ff80143bbaf9781e7b4f2c, type: 2}
   - {fileID: 11400000, guid: e23feeb00cf0b8f42abec61660d05bab, type: 2}
   - {fileID: 11400000, guid: 7e3987559645baf489fe8b11e3c0a6c1, type: 2}
-  enemyPrefab: {fileID: 114535298744997676, guid: 065c241904faa004a877948c1a92a12f,
+  enemyPrefab: {fileID: 114869488979513682, guid: 8855582f423b90d44b369e564d3583c6,
     type: 2}
   startSpawningOnStart: 1
 --- !u!4 &1025801880

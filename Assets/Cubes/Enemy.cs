@@ -9,26 +9,24 @@ public class Enemy : MonoWithCachedTransform
 	public event Action<Enemy> OnRemoved;
 	public event Action<Enemy> OnFinishedSpawning;
 
-	public DealDamageOnImpact dealDamageOnImpact;
+	public EnemyBody body;
 
-	//TODO better name
-	public MaterialFader materialFader;
 	public PathFinder PathFinder { get; private set; }
 	public bool IsSpawning { get; private set; }
 	public float HalfEdgeSize { get; private set; }
 	public EnemyType Type { get; private set; }
 
-	private Transform _bodyTransform;
-	private Transform BodyTransform
+	protected Transform _bodyTransform;
+	protected Transform BodyTransform
 	{
 		get
 		{
-			return _bodyTransform ?? (_bodyTransform = materialFader.transform);
+			return _bodyTransform ?? (_bodyTransform = body.CachedTransform);
 		}
 	}
 
-	private NearbyCubeTracker _nearbyCubeTracker;
-	private NearbyCubeTracker CubeTracker
+	protected NearbyCubeTracker _nearbyCubeTracker;
+	protected NearbyCubeTracker CubeTracker
 	{
 		get
 		{
@@ -39,9 +37,9 @@ public class Enemy : MonoWithCachedTransform
 	private AMovementStrategy _movementStrategy;
 	private bool _isSetup;
 
-	private void Awake()
+	protected virtual void Awake()
 	{
-		materialFader.MeshRenderer.enabled = false;
+		body.SetVisible(false);
 	}
 
 	//TODO
@@ -61,39 +59,26 @@ public class Enemy : MonoWithCachedTransform
 
 	public void Setup(EnemyConfig config, float speedMultiplier = 1f)
 	{
+		IsSpawning = true;
+
 		PathFinder = new PathFinder(CachedTransform, CubeTracker, config.halfBodyDiagonal);
 		PickMovementStrategy(config, speedMultiplier);
 		CubeTracker.UpdateTrackedAreaSize(_movementStrategy.GetMaxStepDistance());
-		SetupDamageOnImpact(config);
-		SetupHP(config);
-		SetupVisuals(config);
+;
+		SetupBody(config);
 
 		HalfEdgeSize = config.edgeSize / 2f;
 		Type = config.type;
 		_isSetup = true;
 
-		IsSpawning = true;
 		StartCoroutine(CheckPathAndStartMovingRoutine());	
 	}
 
-	private void SetupDamageOnImpact(EnemyConfig config)
+	private void SetupBody(EnemyConfig config)
 	{
-		if (dealDamageOnImpact != null)
-		{
-			dealDamageOnImpact.damage = config.damageOnImpact;
-			dealDamageOnImpact.OnImpact += HandleImpact;
-		}
-	}
-
-	private void SetupHP(EnemyConfig config)
-	{
-		var hp = materialFader.hpToObserve;
-		if (hp != null)
-		{
-			hp.hitPoints = config.hitPoints;
-			hp.destroyWhenHPzero = false;
-			hp.OnHitPointsChanged += HandleHpChanged;
-		}
+		body.Setup(config);
+		body.OnHitPointsChanged += HandleHpChanged;
+		body.dealDamageOnImpact.OnImpact += HandleImpact;
 	}
 
 	private void HandleImpact()
@@ -124,17 +109,11 @@ public class Enemy : MonoWithCachedTransform
 		}
 		else
 		{
-			materialFader.MeshRenderer.enabled = true;
+			body.SetVisible(true);
 			IsSpawning = false;
 			OnFinishedSpawning?.Invoke(this);
 			yield return _movementStrategy.RunRoutine();
 		}
-	}
-
-	private void SetupVisuals(EnemyConfig config)
-	{
-		BodyTransform.localScale = new Vector3(config.edgeSize, config.edgeSize, config.edgeSize);
-		materialFader.SetupRendererAndStartColor(config.color);
 	}
 
 	private void PickMovementStrategy(EnemyConfig config, float speedMultiplier = 1f)
