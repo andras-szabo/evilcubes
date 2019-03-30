@@ -24,6 +24,7 @@ GameObject:
   - component: {fileID: 65131429688309330}
   - component: {fileID: 114220762980155122}
   - component: {fileID: 114961871198728960}
+  - component: {fileID: 114973535951295506}
   m_Layer: 10
   m_Name: TestCubeMesh
   m_TagString: Untagged
@@ -141,10 +142,10 @@ BoxCollider:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1479261930971540}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 1, y: 1, z: 1}
+  m_Size: {x: 1.2, y: 1.2, z: 1.2}
   m_Center: {x: 0, y: 0, z: 0}
 --- !u!114 &114220762980155122
 MonoBehaviour:
@@ -159,6 +160,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hitPoints: 100
   destroyWhenHPzero: 1
+  log: 0
 --- !u!114 &114535298744997676
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -170,8 +172,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 982eaeb4e5c12bf40b1885cf47ab7b32, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mesh: {fileID: 4048193363227510}
-  meshRenderer: {fileID: 23880977717871490}
+  dealDamageOnImpact: {fileID: 114973535951295506}
+  materialFader: {fileID: 114961871198728960}
 --- !u!114 &114961871198728960
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -185,6 +187,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   hpToObserve: {fileID: 114220762980155122}
   color: {r: 1, g: 0.33732823, b: 0, a: 1}
+--- !u!114 &114973535951295506
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1479261930971540}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22a065bc447e0cf4dbe509f3ebddedeb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  destroySelfOnImpact: 0
+  damage: 0
 --- !u!114 &114977923216446314
 MonoBehaviour:
   m_ObjectHideFlags: 1

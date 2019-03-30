@@ -13,6 +13,7 @@ public class HP : MonoBehaviour, IHittable
 	public int hitPoints = 100;
 	public bool destroyWhenHPzero;
 	private int _startingHP;
+	public bool log;
 
 	public event System.Action<HPInfo> OnHitPointsChanged;
 
@@ -32,6 +33,10 @@ public class HP : MonoBehaviour, IHittable
 		if (hitManager != null)
 		{
 			hitManager.Register(gameObject, this);
+			if (log)
+			{
+				Debug.Log("Registering: " + gameObject.name);
+			}
 		}
 	}
 

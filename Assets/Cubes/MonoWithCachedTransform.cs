@@ -3,7 +3,7 @@
 public class MonoWithCachedTransform : MonoBehaviour 
 {
 	protected Transform _cachedTransform;
-	protected Transform CachedTransform
+	public Transform CachedTransform
 	{
 		get
 		{

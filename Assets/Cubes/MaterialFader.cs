@@ -1,15 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [RequireComponent(typeof(Renderer))]
-public class MaterialFader : MonoBehaviour 
+public class MaterialFader : MonoBehaviour
 {
 	public HP hpToObserve;
 
 	public Color color;
-	private Renderer _renderer;
+
 	private MaterialPropertyBlock _materialPropertyBlock;
+
+	private Renderer _renderer;
+	public Renderer MeshRenderer
+	{
+		get
+		{
+			return _renderer ?? (_renderer = GetComponent<Renderer>());
+		}
+	}
 
 	private void Start()
 	{
@@ -27,12 +34,11 @@ public class MaterialFader : MonoBehaviour
 
 	private void SetupRendererAndStartColor()
 	{
-		_renderer = GetComponent<Renderer>();
 		_materialPropertyBlock = new MaterialPropertyBlock();
 
-		_renderer.GetPropertyBlock(_materialPropertyBlock);
+		MeshRenderer.GetPropertyBlock(_materialPropertyBlock);
 		_materialPropertyBlock.SetColor("_Color", color);
-		_renderer.SetPropertyBlock(_materialPropertyBlock);
+		MeshRenderer.SetPropertyBlock(_materialPropertyBlock);
 	}
 
 	private void OnDestroy()

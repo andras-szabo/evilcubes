@@ -33,8 +33,8 @@ public class PathFinder
 				continue;
 			}
 
-			var dist = Vector3.SqrMagnitude(other.transform.position - _cachedTransform.position);
-			var min = Mathf.Pow(other.mesh.localScale.x / 2f + halfEdge, 2f);
+			var dist = Vector3.SqrMagnitude(other.CachedTransform.position - _cachedTransform.position);
+			var min = Mathf.Pow(other.HalfEdgeSize + halfEdge, 2f);
 
 			if (dist < min)
 			{

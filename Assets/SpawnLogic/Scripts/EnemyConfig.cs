@@ -4,6 +4,7 @@
 public class EnemyConfig : ScriptableObject
 {
 	public EnemyType type;
+	[Header("Rolls")]
 	[Range(0.2f, 10f)] public float edgeSize;
 	[Range(0.2f, 5f)] public float speedUnitsPerSecond;
 	[Range(0f, 1f)] public float sideRollChance;
@@ -14,6 +15,12 @@ public class EnemyConfig : ScriptableObject
 	
 	[Tooltip("A chance of 1 means a jumper will jump every move, unless the player is closer than a jump distance, at which point it will roll.")]
 	[Range(0f, 1f)] public float jumpChance;
+
+	[Header("Dmg")]
+	[Range(0, 100)] public int damageOnImpact;
+
+	[Header("Looks")]
+	public Color color;
 
 	[HideInInspector]
 	public float halfBodyDiagonal;

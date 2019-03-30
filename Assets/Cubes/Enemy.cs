@@ -8,12 +8,22 @@ public class Enemy : MonoWithCachedTransform
 {
 	public event Action<Enemy> OnRemoved;
 
-	public Transform mesh;
-	public Renderer meshRenderer;
+	public DealDamageOnImpact dealDamageOnImpact;
 
+	//TODO better name
+	public MaterialFader materialFader;
 	public PathFinder PathFinder { get; private set; }
-
 	public bool IsSpawning { get; private set; }
+	public float HalfEdgeSize { get; private set; }
+
+	private Transform _bodyTransform;
+	private Transform BodyTransform
+	{
+		get
+		{
+			return _bodyTransform ?? (_bodyTransform = materialFader.transform);
+		}
+	}
 
 	private NearbyCubeTracker _nearbyCubeTracker;
 	private NearbyCubeTracker CubeTracker
@@ -29,12 +39,12 @@ public class Enemy : MonoWithCachedTransform
 
 	private void Awake()
 	{
-		meshRenderer.enabled = false;
+		materialFader.MeshRenderer.enabled = false;
 	}
 
 	private void Start()
 	{
-		var hp = mesh.GetComponent<HP>();
+		var hp = materialFader.hpToObserve;
 		if (hp != null)
 		{
 			hp.destroyWhenHPzero = false;
@@ -45,7 +55,7 @@ public class Enemy : MonoWithCachedTransform
 	//TODO
 	private void LateUpdate()
 	{
-		if (_isSetup && !IsSpawning && PathFinder.AmIOverlappingAnotherCube(mesh.localScale.x / 2f))
+		if (_isSetup && !IsSpawning && PathFinder.AmIOverlappingAnotherCube(HalfEdgeSize))
 		{
 			Debug.LogError(gameObject.name);
 			Debug.Break();
@@ -62,11 +72,28 @@ public class Enemy : MonoWithCachedTransform
 		PathFinder = new PathFinder(CachedTransform, CubeTracker, config.halfBodyDiagonal);
 		PickMovementStrategy(config, speedMultiplier);
 		CubeTracker.UpdateTrackedAreaSize(_movementStrategy.GetMaxStepDistance());
+		SetupDamageOnImpact(config);
 		UpdateVisuals(config);
 
+		HalfEdgeSize = config.edgeSize / 2f;
 		_isSetup = true;
+
 		IsSpawning = true;
 		StartCoroutine(CheckPathAndStartMovingRoutine());	
+	}
+
+	private void SetupDamageOnImpact(EnemyConfig config)
+	{
+		if (dealDamageOnImpact != null)
+		{
+			dealDamageOnImpact.damage = config.damageOnImpact;
+			dealDamageOnImpact.OnImpact += HandleImpact;
+		}
+	}
+
+	private void HandleImpact()
+	{
+		Destroy(this.gameObject);
 	}
 
 	private void HandleHpChanged(HPInfo hp)
@@ -92,7 +119,7 @@ public class Enemy : MonoWithCachedTransform
 		}
 		else
 		{
-			meshRenderer.enabled = true;
+			materialFader.MeshRenderer.enabled = true;
 			IsSpawning = false;
 			yield return _movementStrategy.RunRoutine();
 		}
@@ -100,7 +127,7 @@ public class Enemy : MonoWithCachedTransform
 
 	private void UpdateVisuals(EnemyConfig config)
 	{
-		mesh.localScale = new Vector3(config.edgeSize, config.edgeSize, config.edgeSize);
+		BodyTransform.localScale = new Vector3(config.edgeSize, config.edgeSize, config.edgeSize);
 	}
 
 	private void PickMovementStrategy(EnemyConfig config, float speedMultiplier = 1f)
@@ -111,11 +138,11 @@ public class Enemy : MonoWithCachedTransform
 			case EnemyType.Simple: 
 			case EnemyType.Zigzag:
 			case EnemyType.Titan:
-				_movementStrategy = new RollStrategy(CachedTransform, mesh, PathFinder, config, speedMultiplier); 
+				_movementStrategy = new RollStrategy(CachedTransform, BodyTransform, PathFinder, config, speedMultiplier); 
 				break;
 
 			case EnemyType.Jumper:
-				_movementStrategy = new JumpStrategy(CachedTransform, mesh, PathFinder, config, speedMultiplier);
+				_movementStrategy = new JumpStrategy(CachedTransform, BodyTransform, PathFinder, config, speedMultiplier);
 				break;
 		}
 	}
