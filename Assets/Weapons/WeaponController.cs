@@ -173,7 +173,7 @@ public class WeaponController : MonoWithCachedTransform
 	{
 		foreach (var ray in _projectileRays)
 		{
-			var trail = _pool.Spawn<BulletTrail>(_activeConfig.bulletTrail, barrel.position, Quaternion.identity, null);
+			var trail = _pool.Spawn<BulletTrail>(_activeConfig.bulletTrail, barrel.position, barrel.rotation, null);
 			trail.Setup(ray);
 		}
 	}

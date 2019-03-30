@@ -20,4 +20,4 @@ MonoBehaviour:
   titanToAppearAt: 32
   minSpawnDistanceFromPlayer: 60
   maxSpawnDistanceFromPlayer: 100
-  cubeSpeedMultiplier: 1
+  cubeSpeedMultiplier: 0.8
