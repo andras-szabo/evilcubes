@@ -1,6 +1,19 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
+public struct ShotInfo
+{
+	public ShotInfo(int fired, int hit)
+	{
+		bulletsFired = fired;
+		bulletsHit = hit;
+	}
+
+	public readonly int bulletsFired;
+	public readonly int bulletsHit;
+}
 
 public class WeaponController : MonoWithCachedTransform
 {
@@ -25,8 +38,9 @@ public class WeaponController : MonoWithCachedTransform
 	public const int MAX_HIT_PER_SHOT = 256;
 	public const float MAX_DISPERSION_DEGREE = 15f;
 
-	public event System.Action<WeaponState> OnWeaponChanged;
-	public event System.Action<float> OnDispersionChanged;
+	public event Action<WeaponState> OnWeaponChanged;
+	public event Action<float> OnDispersionChanged;
+	public event Action<ShotInfo> OnShotFired;
 
 	public WeaponConfig[] configs;
 
@@ -108,8 +122,13 @@ public class WeaponController : MonoWithCachedTransform
 
 	public void HandleTriggerPull()
 	{
-		if (TryShoot())
+		int bulletsFired = 0;
+		int bulletsHit = 0;
+
+		if (TryShoot(out bulletsFired, out bulletsHit))
 		{
+			OnShotFired?.Invoke(new ShotInfo(bulletsFired, bulletsHit));
+
 			if (_activeConfig.isAutomatic)
 			{
 				IncreaseDispersionRate();
@@ -126,8 +145,11 @@ public class WeaponController : MonoWithCachedTransform
 	{
 		if (_activeConfig.isAutomatic)
 		{
-			if (TryShoot())
+			int bulletsFired = 0;
+			int bulletsHit = 0;
+			if (TryShoot(out bulletsFired, out bulletsHit))
 			{
+				OnShotFired?.Invoke(new ShotInfo(bulletsFired, bulletsHit));
 				IncreaseDispersionRate();
 			}
 		}
@@ -142,12 +164,16 @@ public class WeaponController : MonoWithCachedTransform
 		}
 	}
 
-	private bool TryShoot()
+	private bool TryShoot(out int bulletsFired, out int bulletsHit)
 	{
+		bulletsFired = 0; bulletsHit = 0;
+
 		if (_activeWeaponState.elapsedSinceLastShot < _activeConfig.coolDownSeconds)
 		{
 			return false;
 		}
+
+		bulletsFired = _activeConfig.projectileCountPerShot;
 
 		_activeWeaponState.elapsedSinceLastShot = 0f;
 		_projectileRays.Clear();
@@ -171,6 +197,7 @@ public class WeaponController : MonoWithCachedTransform
 			if (hitCount > 0)
 			{
 				ProcessHits(hitCount);
+				bulletsHit += 1;
 			}
 		}
 		return true;
@@ -179,8 +206,8 @@ public class WeaponController : MonoWithCachedTransform
 	private void CalculateBulletDisplacementAtUnitDistance(ref float hDisplacement, ref float vDisplacement)
 	{
 		var currentDispersionDegrees = _activeWeaponState.currentDispersionDegrees;
-		var horizontalDispersion = Random.Range(-currentDispersionDegrees, currentDispersionDegrees);
-		var verticalDispersion = Random.Range(-currentDispersionDegrees, currentDispersionDegrees);
+		var horizontalDispersion = UnityEngine.Random.Range(-currentDispersionDegrees, currentDispersionDegrees);
+		var verticalDispersion = UnityEngine.Random.Range(-currentDispersionDegrees, currentDispersionDegrees);
 
 		if (!Mathf.Approximately(horizontalDispersion, 0f))
 		{

@@ -25,6 +25,18 @@ public class GameModel
 		OnDeadEnemyCountChanged?.Invoke(DeadEnemyCount);
 	}
 
+	public void HandleShotFired(ShotInfo info)
+	{
+		BulletsFiredCount += info.bulletsFired;
+		BulletsHitCount += info.bulletsHit;
+
+		OnBulletsFiredCountChanged?.Invoke(BulletsFiredCount);
+		if (info.bulletsHit > 0)
+		{
+			OnBulletsHitCountChanged?.Invoke(BulletsHitCount);
+		}
+	}
+
 	private void UpdateStats(EnemyInfo info)
 	{
 		LiveEnemyCount = info.currentLiveEnemyCount;

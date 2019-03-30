@@ -5,6 +5,8 @@ public class GameModelView : MonoBehaviour
 {
 	public Text liveEnemyCountLabel;
 	public Text deadEnemyCountLabel;
+	public Text shotsFiredLabel;
+	public Text shotsHitLabel;
 
 	private void Start()
 	{
@@ -12,9 +14,13 @@ public class GameModelView : MonoBehaviour
 
 		gameModel.OnLiveEnemyCountChanged += HandleLiveEnemyCountChanged;
 		gameModel.OnDeadEnemyCountChanged += HandleDeadEnemyCountChanged;
+		gameModel.OnBulletsFiredCountChanged += HandleBulletsFiredCountChanged;
+		gameModel.OnBulletsHitCountChanged += HandleBulletsHitCountChanged;
 
 		HandleLiveEnemyCountChanged(0);
 		HandleDeadEnemyCountChanged(0);
+		HandleBulletsFiredCountChanged(0);
+		HandleBulletsHitCountChanged(0);
 	}
 
 	private void OnDestroy()
@@ -24,6 +30,23 @@ public class GameModelView : MonoBehaviour
 		{
 			gc.GameModel.OnLiveEnemyCountChanged -= HandleLiveEnemyCountChanged;
 			gc.GameModel.OnDeadEnemyCountChanged -= HandleDeadEnemyCountChanged;
+			gc.GameModel.OnBulletsFiredCountChanged -= HandleBulletsFiredCountChanged;
+		}
+	}
+
+	private void HandleBulletsFiredCountChanged(int bulletCount)
+	{
+		if (shotsFiredLabel != null)
+		{
+			shotsFiredLabel.text = string.Format("Bullets fired: {0}", bulletCount);
+		}
+	}
+
+	private void HandleBulletsHitCountChanged(int bulletCount)
+	{
+		if (shotsHitLabel != null)
+		{
+			shotsHitLabel.text = string.Format("Bullets hit: {0}", bulletCount);
 		}
 	}
 
