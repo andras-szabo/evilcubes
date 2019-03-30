@@ -4,6 +4,8 @@
 public class EnemyConfig : ScriptableObject
 {
 	public EnemyType type;
+	[Range(1, 100)] public int hitPoints;
+
 	[Header("Rolls")]
 	[Range(0.2f, 10f)] public float edgeSize;
 	[Range(0.2f, 5f)] public float speedUnitsPerSecond;
@@ -29,6 +31,7 @@ public class EnemyConfig : ScriptableObject
 	{
 		halfBodyDiagonal = Mathf.Sqrt(3f) * edgeSize / 2f;
 		edgeSize = Mathf.Max(0.2f, edgeSize);
+		hitPoints = Mathf.Max(1, hitPoints);
 		speedUnitsPerSecond = Mathf.Max(0.2f, speedUnitsPerSecond);
 	}
 }

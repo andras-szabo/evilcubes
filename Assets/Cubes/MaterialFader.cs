@@ -5,9 +5,11 @@ public class MaterialFader : MonoBehaviour
 {
 	public HP hpToObserve;
 
-	public Color color;
+	public bool selfSetup;
+	public Color defaultColor;
 
 	private MaterialPropertyBlock _materialPropertyBlock;
+	private Color _startColor;
 
 	private Renderer _renderer;
 	public Renderer MeshRenderer
@@ -21,7 +23,11 @@ public class MaterialFader : MonoBehaviour
 	private void Start()
 	{
 		ObserveHP();
-		SetupRendererAndStartColor();
+
+		if (selfSetup)
+		{
+			SetupRendererAndStartColor(defaultColor);
+		}
 	}
 
 	private void ObserveHP()
@@ -32,13 +38,18 @@ public class MaterialFader : MonoBehaviour
 		}
 	}
 
-	private void SetupRendererAndStartColor()
+	public void SetupRendererAndStartColor(Color newColor)
 	{
-		_materialPropertyBlock = new MaterialPropertyBlock();
+		if (_materialPropertyBlock == null)
+		{
+			_materialPropertyBlock = new MaterialPropertyBlock();
+		}
 
 		MeshRenderer.GetPropertyBlock(_materialPropertyBlock);
-		_materialPropertyBlock.SetColor("_Color", color);
+		_materialPropertyBlock.SetColor("_Color", newColor);
 		MeshRenderer.SetPropertyBlock(_materialPropertyBlock);
+
+		_startColor = newColor;
 	}
 
 	private void OnDestroy()
@@ -54,7 +65,7 @@ public class MaterialFader : MonoBehaviour
 		var currentOpacity = hpInfo.RateToFull;
 
 		_renderer.GetPropertyBlock(_materialPropertyBlock);
-		_materialPropertyBlock.SetColor("_Color", new Color(color.r, color.g, color.b, currentOpacity));
+		_materialPropertyBlock.SetColor("_Color", new Color(_startColor.r, _startColor.g, _startColor.b, currentOpacity));
 		_renderer.SetPropertyBlock(_materialPropertyBlock);
 	}
 }

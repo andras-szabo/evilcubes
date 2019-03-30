@@ -42,16 +42,6 @@ public class Enemy : MonoWithCachedTransform
 		materialFader.MeshRenderer.enabled = false;
 	}
 
-	private void Start()
-	{
-		var hp = materialFader.hpToObserve;
-		if (hp != null)
-		{
-			hp.destroyWhenHPzero = false;
-			hp.OnHitPointsChanged += HandleHpChanged;
-		}
-	}
-	
 	//TODO
 	private void LateUpdate()
 	{
@@ -73,7 +63,8 @@ public class Enemy : MonoWithCachedTransform
 		PickMovementStrategy(config, speedMultiplier);
 		CubeTracker.UpdateTrackedAreaSize(_movementStrategy.GetMaxStepDistance());
 		SetupDamageOnImpact(config);
-		UpdateVisuals(config);
+		SetupHP(config);
+		SetupVisuals(config);
 
 		HalfEdgeSize = config.edgeSize / 2f;
 		_isSetup = true;
@@ -88,6 +79,17 @@ public class Enemy : MonoWithCachedTransform
 		{
 			dealDamageOnImpact.damage = config.damageOnImpact;
 			dealDamageOnImpact.OnImpact += HandleImpact;
+		}
+	}
+
+	private void SetupHP(EnemyConfig config)
+	{
+		var hp = materialFader.hpToObserve;
+		if (hp != null)
+		{
+			hp.hitPoints = config.hitPoints;
+			hp.destroyWhenHPzero = false;
+			hp.OnHitPointsChanged += HandleHpChanged;
 		}
 	}
 
@@ -125,9 +127,10 @@ public class Enemy : MonoWithCachedTransform
 		}
 	}
 
-	private void UpdateVisuals(EnemyConfig config)
+	private void SetupVisuals(EnemyConfig config)
 	{
 		BodyTransform.localScale = new Vector3(config.edgeSize, config.edgeSize, config.edgeSize);
+		materialFader.SetupRendererAndStartColor(config.color);
 	}
 
 	private void PickMovementStrategy(EnemyConfig config, float speedMultiplier = 1f)
