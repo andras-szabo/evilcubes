@@ -17,8 +17,11 @@ public class WeaponConfig : ScriptableObject
 			  "Set it to 1 to prevent penetration, and 0 to allow 'like hot knife through butter' behaviour.")]
 	[Range(0f, 1f)] public float dmgReductionRate;
 
-	[Header("Dispersion")]	
+	[Header("Dispersion")]
 	[Range(1, 50)] public int projectileCountPerShot;
 	[Range(0f, 20f)] public float dispersionDegrees;
 	[Range(1f, 5f)] public float dispersionIncrementOverTime;
+
+	[Header("Bullet trail")]
+	public BulletTrail bulletTrail;
 }

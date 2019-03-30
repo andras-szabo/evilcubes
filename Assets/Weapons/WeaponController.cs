@@ -42,6 +42,8 @@ public class WeaponController : MonoWithCachedTransform
 	public event Action<float> OnDispersionChanged;
 	public event Action<ShotInfo> OnShotFired;
 
+	public Transform barrel;
+
 	public WeaponConfig[] configs;
 	public int WeaponCount
 	{
@@ -62,6 +64,7 @@ public class WeaponController : MonoWithCachedTransform
 	private List<Vector3> _projectileRays = new List<Vector3>();
 	private int _enemyLayerMask;
 	private HitManager _hitManager;
+	private PoolManager _pool;
 
 	public WeaponState CurrentWeaponState
 	{
@@ -87,6 +90,7 @@ public class WeaponController : MonoWithCachedTransform
 	private void Start()
 	{
 		_hitManager = ManagerLocator.TryGet<HitManager>();
+		_pool = ManagerLocator.TryGet<PoolManager>();
 	}
 
 	private void LateUpdate()
@@ -145,6 +149,8 @@ public class WeaponController : MonoWithCachedTransform
 				StartCoroutine(SimulateRecoilDispersionRoutine(_activeWeaponState, _activeConfig.dispersionDegrees, 
 															   _activeConfig.coolDownSeconds, simulateRecoil: true));
 			}
+
+			ShowBulletTrails();
 		}
 	}
 
@@ -158,7 +164,17 @@ public class WeaponController : MonoWithCachedTransform
 			{
 				OnShotFired?.Invoke(new ShotInfo(bulletsFired, bulletsHit));
 				IncreaseDispersionRate();
+				ShowBulletTrails();
 			}
+		}
+	}
+
+	private void ShowBulletTrails()
+	{
+		foreach (var ray in _projectileRays)
+		{
+			var trail = _pool.Spawn<BulletTrail>(_activeConfig.bulletTrail, barrel.position, Quaternion.identity, null);
+			trail.Setup(ray);
 		}
 	}
 

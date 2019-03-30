@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Name: TitanEnemy
   m_EditorClassIdentifier: 
   type: 4
-  hitPoints: 500
+  hitPointsPerPart: 20
   edgeSize: 8
   speedUnitsPerSecond: 3
-  sideRollChance: 0.25
+  sideRollChance: 0.5
   jumpForce: 0
   jumpAngle: 0
   jumpChance: 0

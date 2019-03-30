@@ -14,6 +14,7 @@ public class EnemyBody : MonoWithCachedTransform
 
 	private int _maxHP;
 	private int _hp;
+	private int _previousHP;
 
 	public void SetVisible(bool state)
 	{
@@ -31,6 +32,7 @@ public class EnemyBody : MonoWithCachedTransform
 		dealDamageOnImpact.BoxCollider.size = new Vector3(config.edgeSize, config.edgeSize, config.edgeSize);
 		dealDamageOnImpact.damage = config.damageOnImpact;
 
+		_hp = config.hitPointsPerPart * config.composingPartCount;
 		_maxHP = _hp;
 	}
 
@@ -67,8 +69,9 @@ public class EnemyBody : MonoWithCachedTransform
 
 	private void HandlePartsHPChanged(HPInfo info)
 	{
-		_hp -= (info.max - info.current);
-		OnHitPointsChanged?.Invoke(new HPInfo { max = _maxHP, current = _hp });
+		_previousHP = _hp;
+		_hp -= (info.previous - info.current);
+		OnHitPointsChanged?.Invoke(new HPInfo { max = _maxHP, current = _hp, previous = _previousHP });
 	}
 
 	private void SetupComposingPart(EnemyComposingPart part, EnemyConfig config)
@@ -77,11 +80,9 @@ public class EnemyBody : MonoWithCachedTransform
 
 		var hp = part.hp;
 
-		hp.SetStartingHP(config.CalculateHPPerComposingPart());
+		hp.SetStartingHP(config.hitPointsPerPart);
 		hp.destroyWhenHPzero = true;
 		hp.OnHitPointsChanged += HandlePartsHPChanged;
-
-		_hp += hp.hitPoints;
 
 		var fader = part.materialFader;
 		fader.SetupRendererAndStartColor(config.color);

@@ -20,3 +20,5 @@ MonoBehaviour:
   projectileCountPerShot: 1
   dispersionDegrees: 0.6
   dispersionIncrementOverTime: 1.6
+  bulletTrail: {fileID: 114591188280621542, guid: b1692ac5ffa695141af7c408f239fcb2,
+    type: 2}

@@ -13,11 +13,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: Just a test
   spawnIntervalSeconds: 0.1
-  maxLiveCubeCount: 32
+  maxLiveCubeCount: 20
   spawnChanceSimple: 1
   spawnChanceJumper: 1
   spawnChanceZigZag: 1
-  titanToAppearAt: 10
+  titanToAppearAt: 32
   minSpawnDistanceFromPlayer: 60
   maxSpawnDistanceFromPlayer: 100
   cubeSpeedMultiplier: 1

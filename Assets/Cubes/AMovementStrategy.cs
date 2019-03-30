@@ -235,6 +235,12 @@ public class RollMove : AMove
 				_meshToRotate.Rotate(meshRotationAxis, rollAngle, Space.World);
 			}
 
+			if (RollDirection == Direction.Left || RollDirection == Direction.Right)
+			{
+				YawToTarget(halfSize);
+				meshRotationAxis = _cachedTransform.forward;
+			}
+
 			yield return null;
 		}
 

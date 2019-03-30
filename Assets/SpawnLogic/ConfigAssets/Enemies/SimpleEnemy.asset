@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: SimpleEnemy
   m_EditorClassIdentifier: 
   type: 1
-  hitPoints: 120
+  hitPointsPerPart: 80
   edgeSize: 5
   speedUnitsPerSecond: 5
   sideRollChance: 0

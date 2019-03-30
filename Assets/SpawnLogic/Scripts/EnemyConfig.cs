@@ -4,7 +4,7 @@
 public class EnemyConfig : ScriptableObject
 {
 	public EnemyType type;
-	[Range(1, 1000)] public int hitPoints;
+	[Range(1, 100)] public int hitPointsPerPart;
 
 	[Header("Rolls")]
 	[Range(0.2f, 10f)] public float edgeSize;
@@ -32,16 +32,11 @@ public class EnemyConfig : ScriptableObject
 	[HideInInspector]
 	public int composingPartCount;
 
-	public int CalculateHPPerComposingPart()
-	{
-		return (int)Mathf.Max(1, hitPoints / composingPartCount);
-	}
-
 	private void OnValidate()
 	{
 		halfBodyDiagonal = Mathf.Sqrt(3f) * edgeSize / 2f;
 		edgeSize = Mathf.Max(0.2f, edgeSize);
-		hitPoints = Mathf.Max(1, hitPoints);
+		hitPointsPerPart = Mathf.Max(1, hitPointsPerPart);
 		sectionCount = Mathf.Max(1, sectionCount);
 		composingPartCount = (int) Mathf.Pow(sectionCount, 3);
 		speedUnitsPerSecond = Mathf.Max(0.2f, speedUnitsPerSecond);

@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: JumperEnemy
   m_EditorClassIdentifier: 
   type: 2
-  hitPoints: 25
+  hitPointsPerPart: 25
   edgeSize: 1
   speedUnitsPerSecond: 5
   sideRollChance: 0
@@ -21,4 +21,6 @@ MonoBehaviour:
   jumpChance: 0.25
   damageOnImpact: 5
   color: {r: 1, g: 0, b: 0.26194954, a: 1}
+  sectionCount: 1
   halfBodyDiagonal: 0.8660254
+  composingPartCount: 1

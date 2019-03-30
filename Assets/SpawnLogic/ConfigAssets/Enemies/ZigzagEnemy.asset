@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: ZigzagEnemy
   m_EditorClassIdentifier: 
   type: 3
-  hitPoints: 50
+  hitPointsPerPart: 75
   edgeSize: 3
   speedUnitsPerSecond: 4
   sideRollChance: 0.25
@@ -21,4 +21,6 @@ MonoBehaviour:
   jumpChance: 0
   damageOnImpact: 10
   color: {r: 1, g: 0, b: 0.60188293, a: 1}
+  sectionCount: 1
   halfBodyDiagonal: 2.598076
+  composingPartCount: 1

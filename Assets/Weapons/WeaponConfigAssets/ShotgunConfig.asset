@@ -13,10 +13,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: shotgun
   isAutomatic: 0
-  coolDownSeconds: 1
-  range: 20
+  coolDownSeconds: 0.5
+  range: 50
   damagePerProjectile: 10
   dmgReductionRate: 0.1
   projectileCountPerShot: 32
   dispersionDegrees: 15
   dispersionIncrementOverTime: 2
+  bulletTrail: {fileID: 114591188280621542, guid: b1692ac5ffa695141af7c408f239fcb2,
+    type: 2}
