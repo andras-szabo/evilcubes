@@ -72,6 +72,12 @@ public class PlayerController : MonoBehaviour, IManager
 		{
 			camRotator.TogglePerspective();
 		}
+
+		if (Input.GetKeyDown(KeyCode.R))
+		{
+			var hud = ManagerLocator.TryGet<HUD>();
+			hud?.ToggleRearViewMirrorCamera();
+		}
 	}
 
 	private void ProcessCameraRotationInput()

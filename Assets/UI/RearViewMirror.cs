@@ -4,6 +4,7 @@
 public class RearViewMirror : MonoBehaviour 
 {
 	public Camera rearViewCamera;
+	public Camera topDownViewCamera;
 
 	private RectTransform _rt;
 	private RectTransform CachedRectTransform
@@ -20,14 +21,38 @@ public class RearViewMirror : MonoBehaviour
 		{
 			rearViewCamera.enabled = false;
 		}
+
+		if (topDownViewCamera != null)
+		{
+			topDownViewCamera.enabled = false;
+		}
 	}
 
 	private void Start()
 	{
+		var pixelRect = GetPixelRectForCamera();
 		if (rearViewCamera != null)
 		{
-			rearViewCamera.pixelRect = GetPixelRectForCamera();
+			rearViewCamera.pixelRect = pixelRect;
 			rearViewCamera.enabled = true;
+		}
+
+		if (topDownViewCamera != null)
+		{
+			topDownViewCamera.pixelRect = pixelRect;
+		}
+	}
+
+	public void ToggleRearViewCamera()
+	{
+		if (rearViewCamera != null)
+		{
+			rearViewCamera.enabled = !rearViewCamera.enabled;
+		}
+
+		if (topDownViewCamera != null)
+		{
+			topDownViewCamera.enabled = !topDownViewCamera.enabled;
 		}
 	}
 

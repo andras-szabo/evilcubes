@@ -13,12 +13,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: machineGun
   isAutomatic: 1
-  coolDownSeconds: 0.15
+  coolDownSeconds: 0.08
   range: 200
-  damagePerProjectile: 20
+  damagePerProjectile: 10
   dmgReductionRate: 0.5
   projectileCountPerShot: 1
   dispersionDegrees: 0.6
-  dispersionIncrementOverTime: 1.6
+  dispersionIncrementOverTime: 1.2
   bulletTrail: {fileID: 114591188280621542, guid: b1692ac5ffa695141af7c408f239fcb2,
     type: 2}

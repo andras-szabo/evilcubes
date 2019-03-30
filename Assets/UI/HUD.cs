@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HUD : MonoBehaviour
+public class HUD : MonoBehaviour, IManager
 {
 	public const float CROSSHAIR_MIN_SCALE = 0.1f;
 	public const float CROSSHAIR_MAX_SCALE = 2f;
@@ -10,10 +10,16 @@ public class HUD : MonoBehaviour
 	public Text activeWeaponLabel;
 	public Image activeWeaponCooldown;
 	public RectTransform crosshair;
+	public RearViewMirror rearViewMirror;
 
 	private PlayerController _player;
 	private WeaponController.WeaponState _weaponState;
 	private bool _isSetup;
+
+	private void Awake()
+	{
+		ManagerLocator.TryRegister<HUD>(this);
+	}
 
 	private IEnumerator Start()
 	{
@@ -46,6 +52,11 @@ public class HUD : MonoBehaviour
 		}
 	}
 
+	public void ToggleRearViewMirrorCamera()
+	{
+		rearViewMirror.ToggleRearViewCamera();
+	}
+
 	private void Setup()
 	{
 		if (_player != null)
@@ -56,7 +67,7 @@ public class HUD : MonoBehaviour
 
 			wc.OnWeaponChanged += HandleWeaponChanged;
 			wc.OnDispersionChanged += HandleDispersionChanged;
-			
+				
 			_isSetup = true;
 		}
 	}

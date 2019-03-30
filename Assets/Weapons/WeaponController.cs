@@ -36,7 +36,7 @@ public class WeaponController : MonoWithCachedTransform
 	}
 
 	public const int MAX_HIT_PER_SHOT = 256;
-	public const float MAX_DISPERSION_DEGREE = 15f;
+	public const float MAX_DISPERSION_DEGREE = 25f;
 
 	public event Action<WeaponState> OnWeaponChanged;
 	public event Action<float> OnDispersionChanged;

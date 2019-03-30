@@ -13,7 +13,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: sniperRifle
   isAutomatic: 0
-  coolDownSeconds: 3
+  coolDownSeconds: 1
   range: 500
   damagePerProjectile: 200
   dmgReductionRate: 0
