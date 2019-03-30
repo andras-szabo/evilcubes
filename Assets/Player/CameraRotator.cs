@@ -12,6 +12,7 @@ public class CameraRotator : MonoWithCachedTransform
 	[Range(1f, 500f)] public float vertSensitivity = 100f;
 	[Range(1f, 500f)] public float horiSensitivity = 100f;
 	[Range(0f, 2f)] public float perspectiveSwitchDurationSeconds = 1f;
+	[Range(0.1f, 1f)] public float turnAroundSeconds = 0.25f;
 	public ViewPosition startingViewPosition;
 
 	public bool invertMouseVertical = true;

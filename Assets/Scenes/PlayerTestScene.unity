@@ -2199,6 +2199,7 @@ MonoBehaviour:
   camRotator: {fileID: 1314620869}
   weaponController: {fileID: 1938298500}
   HP: {fileID: 1761079518}
+  allowQuickTurnaround: 1
 --- !u!4 &1949651234
 Transform:
   m_ObjectHideFlags: 0
