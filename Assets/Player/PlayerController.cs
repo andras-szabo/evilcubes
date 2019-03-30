@@ -4,6 +4,7 @@ public class PlayerController : MonoBehaviour, IManager
 {
 	public CameraRotator camRotator;
 	public WeaponController weaponController;
+	public HP HP;
 
 	private void Awake()
 	{

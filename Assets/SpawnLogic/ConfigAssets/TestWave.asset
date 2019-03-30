@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Name: TestWave
   m_EditorClassIdentifier: 
   id: Just a test
-  spawnIntervalSeconds: 1
+  spawnIntervalSeconds: 0.2
   maxLiveCubeCount: 500
   spawnChanceSimple: 1
   spawnChanceJumper: 1

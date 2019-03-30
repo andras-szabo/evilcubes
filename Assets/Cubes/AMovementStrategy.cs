@@ -35,9 +35,7 @@ public class JumpStrategy : AMovementStrategy
 	private JumpMove _jump;
 	private RollMove _roll;
 
-	private float _jumpDistance;
 	private float _jumpChance;
-
 	private float _maxJumpDistance;
 
 	public JumpStrategy(Transform cachedTransform, Transform meshToRotate, PathFinder pathFinder, EnemyConfig config, float speedMultiplier):
@@ -77,7 +75,7 @@ public class JumpStrategy : AMovementStrategy
 
 	private bool IsPlayerOutOfJumpDistance()
 	{
-		return Vector3.SqrMagnitude(-_cachedTransform.position) > (_jumpDistance * _jumpDistance);
+		return Vector3.SqrMagnitude(-_cachedTransform.position) > (_maxJumpDistance * _maxJumpDistance);
 	}
 
 	private bool HasRandomChanceToJump()
