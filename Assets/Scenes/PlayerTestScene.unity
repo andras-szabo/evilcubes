@@ -424,7 +424,7 @@ GameObject:
   - component: {fileID: 447719977}
   - component: {fileID: 447719976}
   m_Layer: 0
-  m_Name: Plane
+  m_Name: Floor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1307,6 +1307,7 @@ MonoBehaviour:
   vertSensitivity: 200
   horiSensitivity: 200
   perspectiveSwitchDurationSeconds: 1
+  turnAroundSeconds: 0.25
   startingViewPosition: 0
   invertMouseVertical: 1
   body: {fileID: 1761079514}

@@ -25,10 +25,21 @@ public class CameraRotator : MonoWithCachedTransform
 
 	private Coroutine _perspectiveSwitchRoutine;
 	private ViewPosition _currentViewPos;
+	private Coroutine _turnaroundRoutine;
 
 	private void Awake()
 	{
 		SetPerspective(startingViewPosition, animate: false);
+	}
+
+	public void DoQuickTurnaround()
+	{
+		if (_turnaroundRoutine != null)
+		{
+			StopCoroutine(_turnaroundRoutine);
+		}
+
+		_turnaroundRoutine = StartCoroutine(QuickTurnAroundRoutine());
 	}
 
 	public void TogglePerspective()
@@ -71,7 +82,11 @@ public class CameraRotator : MonoWithCachedTransform
 
 	public void ApplyInput(float inputV, float inputH)
 	{
-		RotateBody(inputH);
+		if (_turnaroundRoutine == null)
+		{
+			RotateBody(inputH);
+		}
+
 		RotateHead(invertMouseVertical ? inputV : -inputV);
 	}
 
@@ -85,5 +100,27 @@ public class CameraRotator : MonoWithCachedTransform
 	{
 		var deltaEulerAngles = new Vector3(pitch, 0f, 0f) * vertSensitivity * Time.deltaTime;
 		head.Rotate(deltaEulerAngles);
+	}
+
+	private IEnumerator QuickTurnAroundRoutine()
+	{
+		var forward = CachedTransform.forward;
+		var bodyForward = new Vector3(forward.x, 0f, forward.z).normalized;
+		var startBodyRotation = Quaternion.LookRotation(bodyForward, Vector3.up);
+		var targetBodyRotation = Quaternion.LookRotation(-bodyForward, Vector3.up);
+
+		var elapsed = 0f;
+		var duration = turnAroundSeconds;
+		while (elapsed < duration)
+		{
+			elapsed += Time.deltaTime;
+			var current = Quaternion.Slerp(startBodyRotation, targetBodyRotation, elapsed / duration);
+			body.rotation = current;
+			yield return null;
+		}
+
+		body.rotation = targetBodyRotation;
+		
+		_turnaroundRoutine = null;
 	}
 }

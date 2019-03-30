@@ -10,8 +10,6 @@ public class PlayerController : MonoBehaviour, IManager
 	[Tooltip("When enabled, tapping 'W', 'A', or the right mouse button spins the player quickly around")]
 	public bool allowQuickTurnaround;
 
-	private Coroutine _turnaroundRoutine;
-
 	private void Awake()
 	{
 		ManagerLocator.TryRegister<PlayerController>(this);
@@ -84,45 +82,17 @@ public class PlayerController : MonoBehaviour, IManager
 			ProcessQuickTurnaroundInput();
 		}
 
-		if (_turnaroundRoutine == null)
-		{
-			var v = Input.GetAxis("Mouse Y");
-			var h = Input.GetAxis("Mouse X");
+		var v = Input.GetAxis("Mouse Y");
+		var h = Input.GetAxis("Mouse X");
 
-			camRotator.ApplyInput(v, h);
-		}
+		camRotator.ApplyInput(v, h);
 	}
 
 	private void ProcessQuickTurnaroundInput()
 	{
-		if (_turnaroundRoutine == null)
+		if (Input.GetMouseButton(1))
 		{
-			if (Input.GetMouseButton(1))
-			{
-				_turnaroundRoutine = StartCoroutine(QuickTurnAroundRoutine());
-			}
+			camRotator.DoQuickTurnaround();
 		}
-	}
-
-	private IEnumerator QuickTurnAroundRoutine()
-	{
-		var forward = camRotator.CachedTransform.forward;
-		var bodyForward = new Vector3(forward.x, 0f, forward.z).normalized;
-		var startBodyRotation = Quaternion.LookRotation(bodyForward, Vector3.up);
-		var targetBodyRotation = Quaternion.LookRotation(-bodyForward, Vector3.up);
-
-		var elapsed = 0f;
-		var duration = camRotator.turnAroundSeconds;
-		while (elapsed < duration)
-		{
-			elapsed += Time.deltaTime;
-			var current = Quaternion.Slerp(startBodyRotation, targetBodyRotation, elapsed / duration);
-			camRotator.body.rotation = current;
-			yield return null;
-		}
-
-		camRotator.body.rotation = targetBodyRotation;
-		
-		_turnaroundRoutine = null;
 	}
 }
