@@ -23,6 +23,7 @@ public class PathFinder
 
 	public bool AmIOverlappingAnotherCube(float halfEdge)
 	{
+		var myPosition = _cachedTransform.position;
 		foreach (var other in _nearbyCubeTracker.OtherCubesNearby)
 		{
 			if (other.IsSpawning)
@@ -30,7 +31,7 @@ public class PathFinder
 				continue;
 			}
 
-			var dist = Vector3.SqrMagnitude(other.CachedTransform.position - _cachedTransform.position);
+			var dist = Vector3.SqrMagnitude(other.CachedTransform.position - myPosition);
 			var min = Mathf.Pow(other.HalfEdgeSize + halfEdge, 2f);
 
 			if (dist < min)

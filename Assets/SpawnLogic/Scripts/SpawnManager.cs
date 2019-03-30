@@ -40,7 +40,7 @@ public class SpawnManager : MonoBehaviour, IManager
 	public Enemy enemyPrefab;
 
 	public bool startSpawningOnStart;
-	private Dictionary<int, GameObject> _spawnedEnemiesByUID = new Dictionary<int, GameObject>();
+	private Dictionary<int, Enemy> _spawnedEnemiesByUID = new Dictionary<int, Enemy>();
 
 	private WaveConfig _activeConfig;
 	private int _activeWaveIndex;
@@ -73,6 +73,18 @@ public class SpawnManager : MonoBehaviour, IManager
 			StartSpawning();
 		}
 	}
+
+	/*private void LateUpdate()
+	{
+		foreach (var enemy in _spawnedEnemiesByUID.Values)
+		{
+			if (!enemy.IsSpawning && enemy.IsOverlappingAnotherCube())
+			{
+				Debug.LogError(enemy.gameObject.name);
+				Debug.Break();
+			}
+		}
+	}*/
 
 	private void Init()
 	{
@@ -194,7 +206,7 @@ public class SpawnManager : MonoBehaviour, IManager
 		nme.gameObject.name = string.Format("Spawnee {0} {1}", spawnID++, enemyConfig.type);
 		nme.Setup(enemyConfig, enemySpeedMultiplier);
 
-		_spawnedEnemiesByUID.Add(nme.gameObject.GetInstanceID(), nme.gameObject);
+		_spawnedEnemiesByUID.Add(nme.gameObject.GetInstanceID(), nme);
 
 		nme.OnFinishedSpawning += HandleEnemyFinishedSpawning;
 		nme.OnRemoved += HandleEnemyRemoved;

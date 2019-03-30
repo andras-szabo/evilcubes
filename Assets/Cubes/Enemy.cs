@@ -39,17 +39,13 @@ public class Enemy : MonoWithCachedTransform
 
 	protected virtual void Awake()
 	{
+		IsSpawning = true;
 		body.SetVisible(false);
 	}
 
-	//TODO
-	private void LateUpdate()
+	public bool IsOverlappingAnotherCube()
 	{
-		if (_isSetup && !IsSpawning && PathFinder.AmIOverlappingAnotherCube(HalfEdgeSize))
-		{
-			Debug.LogError(gameObject.name);
-			Debug.Break();
-		}
+		return _isSetup && PathFinder.AmIOverlappingAnotherCube(HalfEdgeSize);
 	}
 
 	private void OnDestroy()
