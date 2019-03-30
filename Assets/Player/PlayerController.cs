@@ -15,7 +15,7 @@ public class PlayerController : MonoBehaviour, IManager
 	{
 		ProcessWeaponInputs();
 	}
-	
+
 	private void LateUpdate()
 	{
 		ProcessCameraRotationInput();
@@ -38,10 +38,27 @@ public class PlayerController : MonoBehaviour, IManager
 		}
 		else
 		{
-			var mouseWheel = Input.GetAxis("Mouse ScrollWheel");
-			if (!Mathf.Approximately(mouseWheel, 0f))
+			ProcessWeaponSelectionInputs();
+		}
+	}
+
+	private void ProcessWeaponSelectionInputs()
+	{
+		var mouseWheel = Input.GetAxis("Mouse ScrollWheel");
+		if (!Mathf.Approximately(mouseWheel, 0f))
+		{
+			weaponController.CycleThroughWeapons(mouseWheel < 0f);
+		}
+		else
+		{
+			var didSelectWeapon = false;
+			for (int weaponIndex = 0; !didSelectWeapon && weaponIndex < weaponController.WeaponCount; ++weaponIndex)
 			{
-				weaponController.CycleThroughWeapons(mouseWheel > 0f);
+				if (Input.GetKeyDown(KeyCode.Alpha1 + weaponIndex) || Input.GetKeyDown(KeyCode.Keypad1 + weaponIndex))
+				{
+					didSelectWeapon = true;
+					weaponController.SetActiveWeapon(weaponIndex);
+				}
 			}
 		}
 	}

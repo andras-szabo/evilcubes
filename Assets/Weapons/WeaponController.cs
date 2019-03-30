@@ -43,6 +43,13 @@ public class WeaponController : MonoWithCachedTransform
 	public event Action<ShotInfo> OnShotFired;
 
 	public WeaponConfig[] configs;
+	public int WeaponCount
+	{
+		get
+		{
+			return configs.Length;
+		}
+	}
 
 	private WeaponConfig _activeConfig;
 	private int _activeConfigIndex;
