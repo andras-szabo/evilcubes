@@ -122,7 +122,7 @@ public class RollStrategy : AMovementStrategy
 
 public abstract class AMove
 {
-	public const float PATH_CHECK_INTERVAL_SECONDS = 0.1f;
+	public const float PATH_CHECK_INTERVAL_SECONDS = 0.25f;
 	protected PathFinder _pathFinder;
 	protected List<Vector3> _plannedPath;
 

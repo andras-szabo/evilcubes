@@ -80,9 +80,10 @@ public class PathFinder
 	public bool OverlapsAnyPositions(List<Vector3> positions, float otherCubeSize)
 	{
 		var distanceLimitSquared = Mathf.Pow(otherCubeSize + _mySize, 2f);
+		var myPos = _cachedTransform.position;
 		foreach (var pos in positions)
 		{
-			if (Vector3.SqrMagnitude(_cachedTransform.position - pos) <= distanceLimitSquared)
+			if (Vector3.SqrMagnitude(myPos - pos) <= distanceLimitSquared)
 			{
 				return true;
 			}

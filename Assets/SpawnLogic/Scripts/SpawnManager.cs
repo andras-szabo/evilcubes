@@ -47,6 +47,7 @@ public class SpawnManager : MonoBehaviour, IManager
 
 	private int _liveEnemyCount;
 	private int _eliminatedEnemyCount;
+	private bool _waitingForTitanSpawnConfirmation;
 
 	private float _elapsedSinceLastSpawn;
 	private bool _spawnCancelToken;
@@ -73,18 +74,6 @@ public class SpawnManager : MonoBehaviour, IManager
 			StartSpawning();
 		}
 	}
-
-	/*private void LateUpdate()
-	{
-		foreach (var enemy in _spawnedEnemiesByUID.Values)
-		{
-			if (!enemy.IsSpawning && enemy.IsOverlappingAnotherCube())
-			{
-				Debug.LogError(enemy.gameObject.name);
-				Debug.Break();
-			}
-		}
-	}*/
 
 	private void Init()
 	{
@@ -146,7 +135,7 @@ public class SpawnManager : MonoBehaviour, IManager
 			{
 				for (int i = 0; i < (int)idealSpawnCount; ++i)
 				{
-					if (_spawnedEnemiesByUID.Count < _activeConfig.maxLiveCubeCount)
+					if (_spawnedEnemiesByUID.Count < _activeConfig.maxLiveCubeCount && !_waitingForTitanSpawnConfirmation)
 					{
 						if (TrySpawnNewEnemy(_activeConfig, _cumulativeSpawnChances))
 						{
@@ -178,13 +167,21 @@ public class SpawnManager : MonoBehaviour, IManager
 	{
 		var success = true;
 		EnemyType enemyToSpawnType;
-		if (_failedSpawnTypes.Count > 0)
+
+		if (_eliminatedEnemyCount >= _activeConfig.titanToAppearAt)
 		{
-			enemyToSpawnType = _failedSpawnTypes.Pop();
+			enemyToSpawnType = EnemyType.Titan;
 		}
 		else
 		{
-			enemyToSpawnType = PickRandomEnemyToSpawn(enemiesByCumulativeSpawnChance);
+			if (_failedSpawnTypes.Count > 0)
+			{
+				enemyToSpawnType = _failedSpawnTypes.Pop();
+			}
+			else
+			{
+				enemyToSpawnType = PickRandomEnemyToSpawn(enemiesByCumulativeSpawnChance);
+			}
 		}
 
 		EnemyConfig enemyConfig;
@@ -195,6 +192,12 @@ public class SpawnManager : MonoBehaviour, IManager
 
 		if (success) { DoSpawn(enemyConfig, spawnPosition, config.cubeSpeedMultiplier); }
 		else { _failedSpawnTypes.Push(enemyConfig.type); }
+
+		if (success && enemyToSpawnType == EnemyType.Titan)
+		{
+			_waitingForTitanSpawnConfirmation = true;
+		}
+
 		return success;
 	}
 
@@ -216,6 +219,12 @@ public class SpawnManager : MonoBehaviour, IManager
 	{
 		_liveEnemyCount++;
 		OnEnemyFinishedSpawning?.Invoke(new EnemyInfo(enemy.Type, _liveEnemyCount, _eliminatedEnemyCount));
+
+		if (enemy.Type == EnemyType.Titan)
+		{
+			_waitingForTitanSpawnConfirmation = false;
+			_spawnCancelToken = true;
+		}
 	}
 
 	private void HandleEnemyRemoved(Enemy enemy)
@@ -229,6 +238,14 @@ public class SpawnManager : MonoBehaviour, IManager
 			_eliminatedEnemyCount++;
 
 			OnEnemyRemoved?.Invoke(new EnemyInfo(enemy.Type, _liveEnemyCount, _eliminatedEnemyCount));
+		}
+		else
+		{
+			if (enemy.Type == EnemyType.Titan)
+			{
+				// We have unsuccessfully tried to spawn a titan. We have to try again.
+				_waitingForTitanSpawnConfirmation = false;
+			}
 		}
 	}
 
