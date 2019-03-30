@@ -79,6 +79,7 @@ public class Enemy : MonoWithCachedTransform
 		body.Setup(config);
 		body.OnHitPointsChanged += HandleHpChanged;
 		body.dealDamageOnImpact.OnImpact += HandleImpact;
+		body.SetVisible(false);
 	}
 
 	private void HandleImpact()
@@ -105,6 +106,7 @@ public class Enemy : MonoWithCachedTransform
 			// in the last frame when I spawned), but it's in the path of someone
 			// else, who now can't do anything to avoid collision. In this case,
 			// let's pretend I wasn't even spawned.
+
 			Destroy(this.gameObject);
 		}
 		else
@@ -112,6 +114,7 @@ public class Enemy : MonoWithCachedTransform
 			body.SetVisible(true);
 			IsSpawning = false;
 			OnFinishedSpawning?.Invoke(this);
+
 			yield return _movementStrategy.RunRoutine();
 		}
 	}

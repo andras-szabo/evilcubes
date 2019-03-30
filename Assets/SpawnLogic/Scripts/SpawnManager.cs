@@ -51,6 +51,7 @@ public class SpawnManager : MonoBehaviour, IManager
 	private float _elapsedSinceLastSpawn;
 	private bool _spawnCancelToken;
 	private Coroutine _spawnRoutine;
+	private Stack<EnemyType> _failedSpawnTypes = new Stack<EnemyType>();
 
 	private List<EnemyWithCumulativeSpawnChance> _cumulativeSpawnChances = new List<EnemyWithCumulativeSpawnChance>();
 
@@ -164,7 +165,15 @@ public class SpawnManager : MonoBehaviour, IManager
 	public bool TrySpawnNewEnemy(WaveConfig config, List<EnemyWithCumulativeSpawnChance> enemiesByCumulativeSpawnChance)
 	{
 		var success = true;
-		var enemyToSpawnType = PickRandomEnemyToSpawn(enemiesByCumulativeSpawnChance);
+		EnemyType enemyToSpawnType;
+		if (_failedSpawnTypes.Count > 0)
+		{
+			enemyToSpawnType = _failedSpawnTypes.Pop();
+		}
+		else
+		{
+			enemyToSpawnType = PickRandomEnemyToSpawn(enemiesByCumulativeSpawnChance);
+		}
 
 		EnemyConfig enemyConfig;
 		Vector3 spawnPosition;
@@ -173,6 +182,7 @@ public class SpawnManager : MonoBehaviour, IManager
 		success &= TryPickRandomPositionToSpawn(enemyConfig, out spawnPosition);
 
 		if (success) { DoSpawn(enemyConfig, spawnPosition, config.cubeSpeedMultiplier); }
+		else { _failedSpawnTypes.Push(enemyConfig.type); }
 		return success;
 	}
 
@@ -181,7 +191,7 @@ public class SpawnManager : MonoBehaviour, IManager
 		var rotationToFacePlayer = Quaternion.LookRotation(new Vector3(-spawnPosition.x, 0f, -spawnPosition.z), Vector3.up);
 		var nme = Instantiate<Enemy>(enemyPrefab, spawnPosition, rotationToFacePlayer);
 
-		nme.gameObject.name = string.Format("Spawnee {0}", spawnID++);
+		nme.gameObject.name = string.Format("Spawnee {0} {1}", spawnID++, enemyConfig.type);
 		nme.Setup(enemyConfig, enemySpeedMultiplier);
 
 		_spawnedEnemiesByUID.Add(nme.gameObject.GetInstanceID(), nme.gameObject);
@@ -241,6 +251,7 @@ public class SpawnManager : MonoBehaviour, IManager
 		}
 
 		position = Vector3.zero;
+
 		return false;
 	}
 

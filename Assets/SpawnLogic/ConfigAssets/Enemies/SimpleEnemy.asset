@@ -12,13 +12,15 @@ MonoBehaviour:
   m_Name: SimpleEnemy
   m_EditorClassIdentifier: 
   type: 1
-  hitPoints: 50
-  edgeSize: 4
+  hitPoints: 500
+  edgeSize: 5
   speedUnitsPerSecond: 5
   sideRollChance: 0
   jumpForce: 0
   jumpAngle: 0
   jumpChance: 0
   damageOnImpact: 10
-  color: {r: 1, g: 0.3847525, b: 0, a: 1}
-  halfBodyDiagonal: 3.4641016
+  color: {r: 0, g: 0.43604088, b: 1, a: 1}
+  sectionCount: 5
+  halfBodyDiagonal: 4.330127
+  composingPartCount: 125

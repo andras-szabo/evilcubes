@@ -41,7 +41,7 @@ GameObject:
   - component: {fileID: 114135000091712888}
   - component: {fileID: 114967540946261200}
   - component: {fileID: 65530141748653484}
-  m_Layer: 10
+  m_Layer: 13
   m_Name: EnemyBody
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -160,7 +160,7 @@ SphereCollider:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1259239471113902}
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_Enabled: 1
   serializedVersion: 2
   m_Radius: 0.5

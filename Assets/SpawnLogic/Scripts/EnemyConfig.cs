@@ -4,7 +4,7 @@
 public class EnemyConfig : ScriptableObject
 {
 	public EnemyType type;
-	[Range(1, 100)] public int hitPoints;
+	[Range(1, 500)] public int hitPoints;
 
 	[Header("Rolls")]
 	[Range(0.2f, 10f)] public float edgeSize;

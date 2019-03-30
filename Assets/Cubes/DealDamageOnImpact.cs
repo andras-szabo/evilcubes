@@ -32,10 +32,7 @@ public class DealDamageOnImpact : MonoBehaviour
 		}
 
 		var collisionManager = ManagerLocator.TryGet<HitManager>();
-		if (collisionManager != null)
-		{
-			collisionManager.ReportHit(other.gameObject, transform.position, damage);
-		}
+		collisionManager?.ReportHit(other.gameObject, transform.position, damage);
 
 		_hasDealtDamage = true;
 
