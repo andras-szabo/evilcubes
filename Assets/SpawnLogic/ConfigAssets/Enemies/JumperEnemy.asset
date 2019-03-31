@@ -13,14 +13,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   type: 2
   hitPointsPerPart: 25
-  edgeSize: 1
-  speedUnitsPerSecond: 5
+  edgeSize: 1.5
+  speedUnitsPerSecond: 4.5
   sideRollChance: 0
   jumpForce: 10
   jumpAngle: 80
   jumpChance: 0.25
-  damageOnImpact: 5
-  color: {r: 1, g: 0, b: 0.26194954, a: 1}
+  damageOnImpact: 8
+  color: {r: 1, g: 0.031644605, b: 0, a: 1}
   sectionCount: 1
-  halfBodyDiagonal: 0.8660254
+  halfBodyDiagonal: 1.299038
   composingPartCount: 1

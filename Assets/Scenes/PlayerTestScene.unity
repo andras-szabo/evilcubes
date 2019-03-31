@@ -1375,7 +1375,9 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Objects here may appear closer than they are
+  m_Text: 'Switch views with "R". And objects here may appear
+
+    closer than they are'
 --- !u!222 &489094162
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2199,31 +2201,12 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: 'Mouse move: look around.
-
-    Left mouse button: shoot.
-
-    Right mouse button: quick turnaround.
-
-    Mouse wheel: cycle through weapons.
-
-
-    ''1'': select machine gun.
-
-    ''2'': select shotgun.
-
-    ''3'': select sniper rifle.
-
-
-    "C": toggle 1st / 3rd person view.
-
-    "R": toggle rear view mirror perspective.
-
-
-    ESC: Pause / quit.
-
-
-    That''s about it.'
+  m_Text: "Shoot everything that moves, until a huge cube appears, at which point,
+    shoot that one to win. \n\nMouse move: look around.\nLeft mouse button: shoot.\nRight
+    mouse button: quick turnaround.\nMouse wheel: cycle through weapons.\n\n'1': select
+    machine gun.\n'2': select shotgun.\n'3': select sniper rifle.\n\n\"C\": toggle
+    1st / 3rd person view.\n\"R\": toggle rear view mirror perspective.\n\nESC: Pause
+    / quit."
 --- !u!222 &900277260
 CanvasRenderer:
   m_ObjectHideFlags: 0
