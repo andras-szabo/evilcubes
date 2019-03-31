@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour, IManager
 	public WeaponController weaponController;
 	public HP HP;
 
-	[Tooltip("When enabled, tapping 'W', 'A', or the right mouse button spins the player quickly around")]
+	[Tooltip("When enabled, the right mouse button spins the player quickly around")]
 	public bool allowQuickTurnaround;
 
 	public bool Paused { get; set; }

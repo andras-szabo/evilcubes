@@ -10,6 +10,7 @@ public class Enemy : MonoWithCachedTransform
 	public event Action<Enemy> OnFinishedSpawning;
 
 	public EnemyBody body;
+	public CameraShaker cameraShaker;
 
 	public PathFinder PathFinder { get; private set; }
 	public bool IsSpawning { get; private set; }
@@ -51,6 +52,11 @@ public class Enemy : MonoWithCachedTransform
 	private void OnDestroy()
 	{
 		OnRemoved?.Invoke(this);
+
+		if (_movementStrategy != null)
+		{
+			_movementStrategy.OnStepFinished -= HandleStepFinished;
+		}
 	}
 
 	public void Setup(EnemyConfig config, float speedMultiplier = 1f)
@@ -59,8 +65,9 @@ public class Enemy : MonoWithCachedTransform
 
 		PathFinder = new PathFinder(CachedTransform, CubeTracker, config.halfBodyDiagonal);
 		PickMovementStrategy(config, speedMultiplier);
+		ConfigureCameraShake(config, _movementStrategy);
 		CubeTracker.UpdateTrackedAreaSize(_movementStrategy.GetMaxStepDistance());
-;
+
 		SetupBody(config);
 
 		HalfEdgeSize = config.edgeSize / 2f;
@@ -68,6 +75,22 @@ public class Enemy : MonoWithCachedTransform
 		_isSetup = true;
 
 		StartCoroutine(CheckPathAndStartMovingRoutine());	
+	}
+
+	private void ConfigureCameraShake(EnemyConfig config, AMovementStrategy movementStrategy)
+	{
+		if (config.type == EnemyType.Titan)
+		{
+			movementStrategy.OnStepFinished += HandleStepFinished;
+		}
+	}
+
+	private void HandleStepFinished()
+	{
+		if (Type == EnemyType.Titan)
+		{
+			cameraShaker.ShakeIt(HalfEdgeSize * 2f);	
+		}
 	}
 
 	private void SetupBody(EnemyConfig config)
@@ -117,7 +140,6 @@ public class Enemy : MonoWithCachedTransform
 
 	private void PickMovementStrategy(EnemyConfig config, float speedMultiplier = 1f)
 	{
-		//TODO
 		switch (config.type)
 		{
 			case EnemyType.Simple: 

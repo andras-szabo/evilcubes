@@ -14,6 +14,11 @@ public class ManagerLocator
 		return Instance.TryRegisterManager<T>(manager);
 	}
 
+	public static List<T> TryGetAll<T>()
+	{
+		return Instance.TryGetAllOfType<T>();
+	}
+
 	public static void Cleanup()
 	{
 		if (_instance != null)
@@ -41,6 +46,21 @@ public class ManagerLocator
 	private void CreateDefaultManagers()
 	{
 		TryRegisterManager<HitManager>(new HitManager());
+	}
+
+	private List<T> TryGetAllOfType<T>()
+	{
+		var result = new List<T>();
+
+		foreach (var manager in _managers.Values)
+		{
+			if (manager is T)
+			{
+				result.Add((T)manager);
+			}
+		}
+
+		return result;
 	}
 
 	private T TryGetManager<T>() where T : class, IManager

@@ -2,7 +2,7 @@
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HUD : MonoBehaviour, IManager
+public class HUD : MonoBehaviour, IManager, IShakeable
 {
 	public const float CROSSHAIR_MIN_SCALE = 0.1f;
 	public const float CROSSHAIR_MAX_SCALE = 2f;
@@ -12,11 +12,13 @@ public class HUD : MonoBehaviour, IManager
 	public RectTransform crosshair;
 	public RearViewMirror rearViewMirror;
 
-	public GameObject[] hudElements;
+	public Transform[] hudElements;
 
 	private PlayerController _player;
 	private WeaponController.WeaponState _weaponState;
 	private bool _isSetup;
+
+	private int _shakingHudElementCount;
 
 	private void Awake()
 	{
@@ -54,11 +56,47 @@ public class HUD : MonoBehaviour, IManager
 		}
 	}
 
+	#region Screen shake
+	public void Shake(float intensity)
+	{
+		if (_shakingHudElementCount == 0)
+		{
+			foreach (var hudElement in hudElements)
+			{
+				StartCoroutine(ShakeRoutine(hudElement, intensity));
+				_shakingHudElementCount++;
+			}
+		}
+	}
+
+	private IEnumerator ShakeRoutine(Transform transform, float intensity)
+	{
+		var startPos = transform.position;
+
+		var elapsed = 0f;
+		var duration = intensity * 0.05f;
+		while (elapsed < duration)
+		{
+			elapsed += Time.deltaTime;
+
+			var deltaX = Random.Range(-intensity, intensity);
+			var deltaY = Random.Range(-intensity, intensity);
+
+			transform.position = startPos + new Vector3(deltaX, deltaY);
+
+			yield return null;
+		}
+
+		transform.position = startPos;
+		_shakingHudElementCount--;
+	}
+	#endregion
+
 	public void ShowHUD(bool state)
 	{
 		foreach (var hudElement in hudElements)
 		{
-			hudElement.SetActive(state);
+			hudElement.gameObject.SetActive(state);
 		}
 
 		if (state)

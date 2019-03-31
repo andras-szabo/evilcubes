@@ -1,9 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class AMovementStrategy
 {
+	public event Action OnStepFinished;
+
 	protected PathFinder _pathFinder;
 	protected Transform _cachedTransform;
 	protected Transform _meshToRotate;
@@ -23,6 +26,11 @@ public abstract class AMovementStrategy
 
 	public abstract IEnumerator RunRoutine();
 	public abstract float GetMaxStepDistance();
+
+	protected void StepFinished()
+	{
+		OnStepFinished?.Invoke();
+	}	
 
 	private float CalculateRollAnglePerUpdate(float edgeSize, float cubeSpeedUnitsPerSecond)
 	{
@@ -65,6 +73,8 @@ public class JumpStrategy : AMovementStrategy
 			{
 				yield return _roll.Execute();
 			}
+
+			StepFinished();
 		}
 	}
 
@@ -80,7 +90,7 @@ public class JumpStrategy : AMovementStrategy
 
 	private bool HasRandomChanceToJump()
 	{
-		return Random.Range(0f, 1f) < _jumpChance;
+		return UnityEngine.Random.Range(0f, 1f) < _jumpChance;
 	}
 }
 
@@ -107,15 +117,17 @@ public class RollStrategy : AMovementStrategy
 		{
 			yield return _roll.Execute();
 			
-			var shouldRollSideWays = Random.Range(0f, 1f) < _chanceToRollSideways;
+			var shouldRollSideWays = UnityEngine.Random.Range(0f, 1f) < _chanceToRollSideways;
 			if (shouldRollSideWays)
 			{
-				_roll.RollDirection = Random.Range(0f, 1f) < 0.5f ? RollMove.Direction.Left : RollMove.Direction.Right;
+				_roll.RollDirection = UnityEngine.Random.Range(0f, 1f) < 0.5f ? RollMove.Direction.Left : RollMove.Direction.Right;
 			}
 			else
 			{
 				_roll.RollDirection = RollMove.Direction.Forward;
 			}
+
+			StepFinished();
 		}
 	}
 }

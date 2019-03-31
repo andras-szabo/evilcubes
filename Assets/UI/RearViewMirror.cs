@@ -1,7 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using UnityEngine;
 
 [RequireComponent(typeof(RectTransform))]
-public class RearViewMirror : MonoBehaviour 
+public class RearViewMirror : MonoBehaviour
 {
 	private Camera rearViewCamera;
 	private Camera topDownViewCamera;
@@ -15,21 +16,21 @@ public class RearViewMirror : MonoBehaviour
 		}
 	}
 
-	private void Start()
+	private IEnumerator Start()
 	{
-		rearViewCamera = GameObject.FindGameObjectWithTag("RearViewCam").GetComponent<Camera>();
-		topDownViewCamera = GameObject.FindGameObjectWithTag("TopDownViewCam").GetComponent<Camera>();
+		var camManager = ManagerLocator.TryGet<CameraManager>();
+
+		while (rearViewCamera == null || topDownViewCamera == null)
+		{
+			rearViewCamera = camManager.TryGetCamera((int)CamType.Rear);
+			topDownViewCamera = camManager.TryGetCamera((int)CamType.TopDown);
+
+			yield return null;
+		}
 
 		var pixelRect = GetPixelRectForCamera();
-		if (rearViewCamera != null)
-		{
-			rearViewCamera.pixelRect = pixelRect;
-		}
-
-		if (topDownViewCamera != null)
-		{
-			topDownViewCamera.pixelRect = pixelRect;
-		}
+		rearViewCamera.pixelRect = pixelRect;
+		topDownViewCamera.pixelRect = pixelRect;
 
 		Setup();
 	}

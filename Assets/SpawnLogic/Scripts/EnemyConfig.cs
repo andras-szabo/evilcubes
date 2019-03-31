@@ -19,7 +19,7 @@ public class EnemyConfig : ScriptableObject
 	[Range(0f, 1f)] public float jumpChance;
 
 	[Header("Dmg")]
-	[Range(0, 100)] public int damageOnImpact;
+	[Range(0, 200)] public int damageOnImpact;
 
 	[Header("Looks")]
 	public Color color;

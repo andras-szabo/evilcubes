@@ -145,7 +145,11 @@ public class GameController : MonoBehaviour, IManager
 
 	private void HandlePlayerDead()
 	{
-		OnGameOver?.Invoke(false);
+		if (!_gameModel.isGameOver)
+		{
+			_gameModel.isGameOver = true;
+			OnGameOver?.Invoke(false);
+		}
 	}
 
 	public void HandleEnemySpawned(EnemyInfo info)
@@ -160,8 +164,9 @@ public class GameController : MonoBehaviour, IManager
 		OnLiveEnemyCountChanged?.Invoke(_gameModel.liveEnemyCount);
 		OnDeadEnemyCountChanged?.Invoke(_gameModel.deadEnemyCount);
 
-		if (info.affectedEnemyType == EnemyType.Titan)
+		if (info.affectedEnemyType == EnemyType.Titan && !_gameModel.isGameOver)
 		{
+			_gameModel.isGameOver = true;
 			OnGameOver?.Invoke(true);
 		}
 	}

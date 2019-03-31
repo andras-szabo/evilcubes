@@ -19,7 +19,7 @@ MonoBehaviour:
   jumpForce: 0
   jumpAngle: 0
   jumpChance: 0
-  damageOnImpact: 80
+  damageOnImpact: 180
   color: {r: 1, g: 0, b: 0, a: 1}
   sectionCount: 5
   halfBodyDiagonal: 6.928203

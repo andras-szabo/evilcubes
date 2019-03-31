@@ -290,7 +290,7 @@ public class WeaponController : MonoWithCachedTransform
 		{
 			var trail = _pool.Spawn<BulletTrail>(_activeConfig.bulletTrail, barrel.position, barrel.rotation, null);
 			var dir = (ray - CachedTransform.position).normalized;
-			trail.Setup(CachedTransform.position + dir * 5f);
+			trail.Setup(CachedTransform.position + dir * 8f);
 		}
 	}
 
