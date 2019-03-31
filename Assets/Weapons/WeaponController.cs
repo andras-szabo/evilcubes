@@ -25,10 +25,12 @@ public class WeaponController : MonoWithCachedTransform
 			cooldown = config.coolDownSeconds;
 			elapsedSinceLastShot = float.MaxValue;
 			currentDispersionDegrees = config.dispersionDegrees;
+			defaultDispersionDegrees = config.dispersionDegrees;
 		}
 
 		readonly public string name;
 		readonly public float cooldown;
+		readonly public float defaultDispersionDegrees;
 
 		public bool isActive;
 		public float elapsedSinceLastShot;
@@ -65,6 +67,7 @@ public class WeaponController : MonoWithCachedTransform
 	private int _enemyLayerMask;
 	private HitManager _hitManager;
 	private PoolManager _pool;
+	private bool _isActive;
 
 	public WeaponState CurrentWeaponState
 	{
@@ -91,13 +94,54 @@ public class WeaponController : MonoWithCachedTransform
 	{
 		_hitManager = ManagerLocator.TryGet<HitManager>();
 		_pool = ManagerLocator.TryGet<PoolManager>();
+
+		ManagerLocator.TryGet<GameController>().OnGameOver += HandleGameOver;
+		ManagerLocator.TryGet<GameController>().OnGameStart += HandleGameStart;
+	}
+	
+	private void LateUpdate()
+	{
+		if (_isActive)
+		{
+			foreach (var weaponState in _weaponStates)
+			{
+				weaponState.elapsedSinceLastShot += Time.deltaTime;
+			}
+		}
 	}
 
-	private void LateUpdate()
+	private void OnDestroy()
+	{
+		var gc = ManagerLocator.TryGet<GameController>();
+		if (gc != null)
+		{
+			gc.OnGameOver -= HandleGameOver;
+			gc.OnGameStart -= HandleGameStart;
+		}
+	}
+
+	private void HandleGameStart()
+	{
+		_isActive = true;
+		ResetWeaponStates();
+	}
+
+	private void HandleGameOver(GameController.GameResult hasPlayerWon)
+	{
+		_isActive = false;
+	}
+
+	public void ResetWeaponStates()
 	{
 		foreach (var weaponState in _weaponStates)
 		{
-			weaponState.elapsedSinceLastShot += Time.deltaTime;
+			weaponState.elapsedSinceLastShot = weaponState.cooldown;
+			weaponState.currentDispersionDegrees = weaponState.defaultDispersionDegrees;
+
+			if (weaponState == _activeWeaponState)
+			{
+				OnDispersionChanged?.Invoke(weaponState.currentDispersionDegrees);
+			}
 		}
 	}
 
@@ -146,8 +190,7 @@ public class WeaponController : MonoWithCachedTransform
 			}
 			else
 			{
-				StartCoroutine(SimulateRecoilDispersionRoutine(_activeWeaponState, _activeConfig.dispersionDegrees, 
-															   _activeConfig.coolDownSeconds, simulateRecoil: true));
+				StartCoroutine(SimulateRecoilDispersionRoutine(_activeWeaponState, simulateRecoil: true));
 			}
 
 			ShowBulletTrails();
@@ -173,8 +216,7 @@ public class WeaponController : MonoWithCachedTransform
 	{
 		if (_activeConfig.isAutomatic)
 		{
-			StartCoroutine(SimulateRecoilDispersionRoutine(_activeWeaponState, _activeConfig.dispersionDegrees,
-														   _activeConfig.coolDownSeconds, false));
+			StartCoroutine(SimulateRecoilDispersionRoutine(_activeWeaponState, false));
 		}
 	}
 
@@ -259,22 +301,22 @@ public class WeaponController : MonoWithCachedTransform
 		OnDispersionChanged?.Invoke(_activeWeaponState.currentDispersionDegrees);
 	}
 
-	private IEnumerator SimulateRecoilDispersionRoutine(WeaponState weaponState, float targetDispersionAmount,
-														float duration, bool simulateRecoil)
+	private IEnumerator SimulateRecoilDispersionRoutine(WeaponState weaponState, bool simulateRecoil)
 	{
 		var startDispersionAmount = simulateRecoil ? MAX_DISPERSION_DEGREE : weaponState.currentDispersionDegrees;
 		var elapsed = 0f;
-		while (elapsed < duration && duration > 0f)
+		while (_isActive && elapsed < weaponState.cooldown && weaponState.cooldown > 0f)
 		{
 			elapsed += Time.deltaTime;
-			weaponState.currentDispersionDegrees = Mathf.Lerp(startDispersionAmount, targetDispersionAmount, elapsed / duration);
+			weaponState.currentDispersionDegrees = Mathf.Lerp(startDispersionAmount, weaponState.defaultDispersionDegrees, 
+															  elapsed / weaponState.cooldown);
 			if (weaponState.isActive)
 			{
 				OnDispersionChanged?.Invoke(weaponState.currentDispersionDegrees);
 			}
 			yield return null;
 		}
-		weaponState.currentDispersionDegrees = targetDispersionAmount;
+		weaponState.currentDispersionDegrees = weaponState.defaultDispersionDegrees;
 	}
 
 	private void IncreaseDispersionRate()

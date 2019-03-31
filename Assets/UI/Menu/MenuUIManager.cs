@@ -42,9 +42,9 @@ public class MenuUIManager : MonoBehaviour, IManager
 		}
 	}
 
-	private void HandleGameOver(bool playerHasWon)
+	private void HandleGameOver(GameController.GameResult gameResult)
 	{
-		StartCoroutine(GameOverRoutine(playerHasWon));
+		StartCoroutine(GameOverRoutine(gameResult));
 	}
 
 	public void OnSettingsButtonClicked()
@@ -81,21 +81,25 @@ public class MenuUIManager : MonoBehaviour, IManager
 		}
 	}
 
-	private IEnumerator GameOverRoutine(bool playerHasWon)
+	private IEnumerator GameOverRoutine(GameController.GameResult playerHasWon)
 	{
 		var gc = ManagerLocator.TryGet<GameController>();
 
 		gc.PauseGame(true);
 
-		var context = new ConfirmationContext();
-		gameOverPopup.Show(playerHasWon, context);
-
-		while (!context.IsFinished)
+		if (playerHasWon != GameController.GameResult.PlayerQuit)
 		{
-			yield return null;
+			var playerWon = playerHasWon == GameController.GameResult.PlayerWon;
+			var context = new ConfirmationContext();
+			gameOverPopup.Show(playerWon, context);
+
+			while (!context.IsFinished)
+			{
+				yield return null;
+			}
 		}
 
-		gc.AbortGame(playerHasWon);
+		gc.AbortGameServices();
 
 		ShowMainMenu();
 	}
@@ -114,8 +118,7 @@ public class MenuUIManager : MonoBehaviour, IManager
 
 		if (doesUserWantToQuit.IsConfirmed)
 		{
-			gc.AbortGame(hasPlayerWon: false);
-			ShowMainMenu();
+			gc.HandlePlayerQuit();
 		}
 		else
 		{

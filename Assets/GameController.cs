@@ -3,12 +3,22 @@ using UnityEngine;
 
 public class GameController : MonoBehaviour, IManager
 {
+	public enum GameResult
+	{
+		None,
+
+		PlayerWon,
+		PlayerDied,
+		PlayerQuit
+	}
+
 	public event Action<int> OnLiveEnemyCountChanged;
 	public event Action<int> OnDeadEnemyCountChanged;
 	public event Action<int> OnBulletsFiredCountChanged;
 	public event Action<int> OnBulletsHitCountChanged;
 
-	public event Action<bool> OnGameOver;
+	public event Action<GameResult> OnGameOver;
+	public event Action OnGameStart;
 
 	private GameModel _gameModel;
 
@@ -78,6 +88,8 @@ public class GameController : MonoBehaviour, IManager
 
 		_spawner.StartSpawning();
 
+		OnGameStart?.Invoke();
+
 		Time.timeScale = 1f;
 	}
 
@@ -91,15 +103,11 @@ public class GameController : MonoBehaviour, IManager
 		}
 	}
 
-	public void AbortGame(bool hasPlayerWon)
+	public void AbortGameServices()
 	{
 		_spawner.StopSpawning();
 		_spawner.Cleanup();
 		_spawner.Reset();
-
-		_gameModel.isGameOngoing = false;
-		_gameModel.hasPlayerWon = hasPlayerWon;
-		_gameModel.isGameOver = true;
 
 		_player.enabled = false;
 		_hud.ShowHUD(false);
@@ -143,35 +151,44 @@ public class GameController : MonoBehaviour, IManager
 		_player.OnPlayerDead -= HandlePlayerDead;
 	}
 
+	public void HandlePlayerQuit()
+	{
+		if (_gameModel.isGameOver == GameResult.None)
+		{
+			_gameModel.isGameOver = GameResult.PlayerQuit;
+			OnGameOver?.Invoke(GameResult.PlayerQuit);
+		};
+	}
+
 	private void HandlePlayerDead()
 	{
-		if (!_gameModel.isGameOver)
+		if (_gameModel.isGameOver == GameResult.None)
 		{
-			_gameModel.isGameOver = true;
-			OnGameOver?.Invoke(false);
+			_gameModel.isGameOver = GameResult.PlayerDied;
+			OnGameOver?.Invoke(GameResult.PlayerDied);
 		}
 	}
 
-	public void HandleEnemySpawned(EnemyInfo info)
+	private void HandleEnemySpawned(EnemyInfo info)
 	{
 		UpdateStats(info);
 		OnLiveEnemyCountChanged?.Invoke(_gameModel.liveEnemyCount);
 	}
 
-	public void HandleEnemyRemoved(EnemyInfo info)
+	private void HandleEnemyRemoved(EnemyInfo info)
 	{
 		UpdateStats(info);
 		OnLiveEnemyCountChanged?.Invoke(_gameModel.liveEnemyCount);
 		OnDeadEnemyCountChanged?.Invoke(_gameModel.deadEnemyCount);
 
-		if (info.affectedEnemyType == EnemyType.Titan && !_gameModel.isGameOver)
+		if (info.affectedEnemyType == EnemyType.Titan && _gameModel.isGameOver == GameResult.None)
 		{
-			_gameModel.isGameOver = true;
-			OnGameOver?.Invoke(true);
+			_gameModel.isGameOver = GameResult.PlayerWon;
+			OnGameOver?.Invoke(GameResult.PlayerWon);
 		}
 	}
 
-	public void HandleShotFired(ShotInfo info)
+	private void HandleShotFired(ShotInfo info)
 	{
 		_gameModel.bulletsFiredCount += info.bulletsFired;
 		_gameModel.bulletsHitcount += info.bulletsHit;

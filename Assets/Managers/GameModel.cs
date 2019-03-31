@@ -6,6 +6,6 @@
 	public int bulletsHitcount;
 
 	public bool isGameOngoing;
-	public bool isGameOver;
+	public GameController.GameResult isGameOver = GameController.GameResult.None;
 	public bool hasPlayerWon;
 }

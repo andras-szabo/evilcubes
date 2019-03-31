@@ -30,7 +30,7 @@ public class CameraManager : MonoBehaviour, IManager, IShakeable
 		}
 	}
 
-	private void HandleGameOver(bool hasPlayerWon)
+	private void HandleGameOver(GameController.GameResult hasPlayerWon)
 	{
 		_shakeCancelToken = true;
 	}

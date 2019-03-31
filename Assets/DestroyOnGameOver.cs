@@ -13,7 +13,7 @@ public class DestroyOnGameOver : MonoBehaviour
 		}
 	}
 
-	private void HandleGameOver(bool hasPlayerWon)
+	private void HandleGameOver(GameController.GameResult hasPlayerWon)
 	{
 		if (poolUser != null)
 		{

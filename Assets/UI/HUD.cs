@@ -17,6 +17,7 @@ public class HUD : MonoBehaviour, IManager, IShakeable
 	private PlayerController _player;
 	private WeaponController.WeaponState _weaponState;
 	private bool _isSetup;
+	private bool _isActive;
 
 	private int _shakingHudElementCount;
 	private bool _shakeCancelToken;
@@ -30,18 +31,25 @@ public class HUD : MonoBehaviour, IManager, IShakeable
 	{
 		_player = ManagerLocator.TryGet<PlayerController>();
 		ManagerLocator.TryGet<GameController>().OnGameOver += HandleGameOver;
+		ManagerLocator.TryGet<GameController>().OnGameStart += HandleGameStart;
 
 		Setup();
 	}
 
-	private void HandleGameOver(bool hasPlayerWon)
+	private void HandleGameStart()
+	{
+		_isActive = true;
+	}
+
+	private void HandleGameOver(GameController.GameResult hasPlayerWon)
 	{
 		_shakeCancelToken = true;
+		_isActive = false;
 	}
 
 	private void Update()
 	{
-		if (_isSetup)
+		if (_isSetup && _isActive)
 		{
 			UpdateWeaponCooldown();
 		}
