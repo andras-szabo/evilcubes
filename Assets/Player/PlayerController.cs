@@ -63,15 +63,15 @@ public class PlayerController : MonoBehaviour, IManager
 
 	private void ProcessWeaponInputs()
 	{
-		if (Input.GetMouseButtonDown(0))
+		if (Input.GetButtonDown("Fire1"))
 		{
 			weaponController.HandleTriggerPull();
 		}
-		else if (Input.GetMouseButton(0))
+		else if (Input.GetButton("Fire1"))
 		{
 			weaponController.HandleTriggerHeld();
 		}
-		else if (Input.GetMouseButtonUp(0))
+		else if (Input.GetButtonUp("Fire1"))
 		{
 			weaponController.HandleTriggerLetGo();
 		}
@@ -131,7 +131,7 @@ public class PlayerController : MonoBehaviour, IManager
 
 	private void ProcessQuickTurnaroundInput()
 	{
-		if (Input.GetMouseButton(1))
+		if (Input.GetButtonDown("Fire2"))
 		{
 			camRotator.DoQuickTurnaround();
 		}

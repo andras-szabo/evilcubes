@@ -43,10 +43,22 @@ public class GameController : MonoBehaviour, IManager
 		ManagerLocator.Cleanup();
 	}
 
+	public void ShowCursor(bool state)
+	{
+		if (state)
+		{
+			Cursor.lockState = CursorLockMode.None;
+			Cursor.visible = true;
+		}
+		else
+		{
+			Cursor.lockState = CursorLockMode.Locked;
+			Cursor.visible = false;
+		}
+	}
+
 	public void StartNewGame()
 	{
-		Cursor.lockState = CursorLockMode.Locked;
-
 		_spawner.StopSpawning();
 		_spawner.Cleanup();
 		_spawner.Reset();
@@ -61,6 +73,7 @@ public class GameController : MonoBehaviour, IManager
 
 		_player.enabled = true;
 		_player.Setup();
+		ShowCursor(false);
 		_hud.ShowHUD(true);
 
 		_spawner.StartSpawning();
@@ -73,7 +86,7 @@ public class GameController : MonoBehaviour, IManager
 		if (_gameModel != null && _gameModel.isGameOngoing)
 		{
 			Time.timeScale = pause ? 0f : 1f;
-			Cursor.lockState = pause ? CursorLockMode.None : CursorLockMode.Locked;
+			ShowCursor(pause);
 			_player.Paused = pause;
 		}
 	}
