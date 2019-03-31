@@ -138,7 +138,7 @@ public abstract class AMove
 			elapsed += PATH_CHECK_INTERVAL_SECONDS;
 		}
 
-		if (timeOut <= elapsed)
+		if (timeOut > 0f && timeOut <= elapsed)
 		{
 			_lastPathFindWasSuccessful = false;
 		}

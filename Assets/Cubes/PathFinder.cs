@@ -6,7 +6,8 @@ public class PathFinder
 	public List<Vector3> Path { get; set; }
 	public List<Vector3> ProvisionalPath { get; private set; }
 
-	public int lastFrameCheck;
+	[Tooltip("Will enemies ignore others if they can reach the player with their final step?")]
+	public bool ignoreOthersIfPlayerWithinRange = true;
 
 	private NearbyCubeTracker _nearbyCubeTracker;
 	private Transform _cachedTransform;
@@ -64,17 +65,27 @@ public class PathFinder
 		ProvisionalPath.Clear();
 		ProvisionalPath.AddRange(path);
 
-		lastFrameCheck = Time.frameCount;
-
 		foreach (var otherCube in _nearbyCubeTracker.OtherCubesNearby)
 		{
 			if (otherCube.OverlapsAnyPositions(path, _mySize))
 			{
+				if (ignoreOthersIfPlayerWithinRange && IsPlayerInRange(path))
+				{
+					return true;
+				}
+
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	public bool IsPlayerInRange(List<Vector3> path)
+	{
+		//Player is assumed to be at the origin
+		var lastStep = path[path.Count - 1];
+		return Vector3.SqrMagnitude(lastStep) <= _mySize * _mySize;
 	}
 
 	public bool OverlapsAnyPositions(List<Vector3> positions, float otherCubeSize)
