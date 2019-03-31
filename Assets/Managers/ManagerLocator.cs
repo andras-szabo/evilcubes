@@ -46,6 +46,7 @@ public class ManagerLocator
 	private void CreateDefaultManagers()
 	{
 		TryRegisterManager<HitManager>(new HitManager());
+		TryRegisterManager<SettingsManager>(new SettingsManager());
 	}
 
 	private List<T> TryGetAllOfType<T>()

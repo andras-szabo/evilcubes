@@ -5,6 +5,7 @@ public class MenuUIManager : MonoBehaviour, IManager
 {
 	public GameObject mainMenu;
 	public GameObject howToPlay;
+	public SettingsPopup settingsPopup;
 	public ConfirmationPopup confirmPopup;
 	public GameOverPopup gameOverPopup;
 
@@ -46,6 +47,11 @@ public class MenuUIManager : MonoBehaviour, IManager
 		StartCoroutine(GameOverRoutine(playerHasWon));
 	}
 
+	public void OnSettingsButtonClicked()
+	{
+		settingsPopup.ShowWhileAtMenu();
+	}
+
 	public void OnHowToPlayButtonClicked()
 	{
 		howToPlay.SetActive(true);
@@ -60,6 +66,11 @@ public class MenuUIManager : MonoBehaviour, IManager
 	{
 		HideAllMenuItems();
 		ManagerLocator.TryGet<GameController>().StartNewGame();
+	}
+
+	public void ShowConfirmPopup(string text, ConfirmationContext confirmContext)
+	{
+		confirmPopup.Setup(text, confirmContext);
 	}
 
 	private void HideAllMenuItems()
@@ -93,15 +104,15 @@ public class MenuUIManager : MonoBehaviour, IManager
 	{
 		gc.PauseGame(true);
 
-		var context = new ConfirmationContext();
-		confirmPopup.Setup("Back to the main menu?", context);
+		var doesUserWantToQuit = new ConfirmationContext();
+		settingsPopup.ShowInGame(doesUserWantToQuit);
 
-		while (!context.IsFinished)
+		while (!doesUserWantToQuit.IsFinished)
 		{
 			yield return null;
 		}
 
-		if (context.IsConfirmed)
+		if (doesUserWantToQuit.IsConfirmed)
 		{
 			gc.AbortGame(hasPlayerWon: false);
 			ShowMainMenu();
@@ -116,7 +127,7 @@ public class MenuUIManager : MonoBehaviour, IManager
 	{
 		var context = new ConfirmationContext();
 		confirmPopup.Setup("Are you sure you want to quit?", context);
-		
+
 		while (!context.IsFinished)
 		{
 			yield return null;

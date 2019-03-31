@@ -9,13 +9,9 @@ public class CameraRotator : MonoWithCachedTransform
 		ThirdPerson
 	};
 
-	[Range(1f, 500f)] public float vertSensitivity = 100f;
-	[Range(1f, 500f)] public float horiSensitivity = 100f;
 	[Range(0f, 2f)] public float perspectiveSwitchDurationSeconds = 1f;
 	[Range(0.1f, 1f)] public float turnAroundSeconds = 0.25f;
 	public ViewPosition startingViewPosition;
-
-	public bool invertMouseVertical = true;
 
 	public Transform body;
 	public Transform head;
@@ -27,9 +23,35 @@ public class CameraRotator : MonoWithCachedTransform
 	private ViewPosition _currentViewPos;
 	private Coroutine _turnaroundRoutine;
 
+	private bool _isMouseInverted;
+	private float _mouseSensitivity;
+
 	private void Awake()
 	{
 		SetPerspective(startingViewPosition, animate: false);
+	}
+
+	private void Start()
+	{
+		_isMouseInverted = SettingsManager.IsMouseInverted();
+		_mouseSensitivity = SettingsManager.MouseSensitivity();
+
+		ManagerLocator.TryGet<SettingsManager>().OnSettingsChanged += HandleSettingsChanged;
+	}
+
+	private void OnDestroy()
+	{
+		var sm = ManagerLocator.TryGet<SettingsManager>();
+		if (sm != null)
+		{
+			sm.OnSettingsChanged -= HandleSettingsChanged;
+		}
+	}
+
+	private void HandleSettingsChanged(SettingsManager.SettingsInfo info)
+	{
+		_isMouseInverted = info.isMouseInverted;
+		_mouseSensitivity = info.mouseSensitivity;
 	}
 
 	public void DoQuickTurnaround()
@@ -87,18 +109,18 @@ public class CameraRotator : MonoWithCachedTransform
 			RotateBody(inputH);
 		}
 
-		RotateHead(invertMouseVertical ? inputV : -inputV);
+		RotateHead(_isMouseInverted ? inputV : -inputV);
 	}
 
 	private void RotateBody(float yaw)
 	{
-		var deltaEulerAngles = new Vector3(0f, yaw, 0f) * horiSensitivity * Time.deltaTime;
+		var deltaEulerAngles = new Vector3(0f, yaw, 0f) * _mouseSensitivity * Time.deltaTime;
 		body.Rotate(deltaEulerAngles);
 	}
 
 	private void RotateHead(float pitch)
 	{
-		var deltaEulerAngles = new Vector3(pitch, 0f, 0f) * vertSensitivity * Time.deltaTime;
+		var deltaEulerAngles = new Vector3(pitch, 0f, 0f) * _mouseSensitivity * Time.deltaTime;
 		head.Rotate(deltaEulerAngles);
 	}
 
