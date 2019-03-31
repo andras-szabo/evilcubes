@@ -115,16 +115,19 @@ public class GameController : MonoBehaviour, IManager
 
 	public void Cleanup()
 	{
-		_gameModel = null;
+		if (this != null)
+		{
+			_gameModel = null;
 
-		CleanupObservers();
-		OnBulletsFiredCountChanged = null;
-		OnBulletsHitCountChanged = null;
-		OnLiveEnemyCountChanged = null;
-		OnDeadEnemyCountChanged = null;
+			CleanupObservers();
+			OnBulletsFiredCountChanged = null;
+			OnBulletsHitCountChanged = null;
+			OnLiveEnemyCountChanged = null;
+			OnDeadEnemyCountChanged = null;
 
-		OnGameOver = null;
-		OnGameStart = null;
+			OnGameOver = null;
+			OnGameStart = null;
+		}
 	}
 
 	private void CacheDependencies()

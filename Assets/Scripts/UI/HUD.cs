@@ -24,9 +24,12 @@ public class HUD : MonoBehaviour, IManager, IShakeable
 
 	public void Cleanup()
 	{
-		StopAllCoroutines();
-		_player = null;
-		_weaponState = null;
+		if (this != null)
+		{
+			StopAllCoroutines();
+			_player = null;
+			_weaponState = null;
+		}
 	}
 
 	private void Awake()

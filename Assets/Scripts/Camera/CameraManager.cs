@@ -12,8 +12,11 @@ public class CameraManager : MonoBehaviour, IManager, IShakeable
 
 	public void Cleanup()
 	{
-		StopAllCoroutines();
-		_camerasByID.Clear();
+		if (this != null)
+		{
+			StopAllCoroutines();
+			_camerasByID.Clear();
+		}
 	}
 
 	private void Awake()

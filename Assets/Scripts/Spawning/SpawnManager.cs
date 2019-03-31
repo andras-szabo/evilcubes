@@ -153,10 +153,13 @@ public class SpawnManager : MonoBehaviour, IManager
 
 	public void Cleanup()
 	{
-		RemoveSpawnedEnemies();
+		if (this != null)
+		{
+			RemoveSpawnedEnemies();
 
-		OnEnemyFinishedSpawning = null;
-		OnEnemyRemoved = null;
+			OnEnemyFinishedSpawning = null;
+			OnEnemyRemoved = null;
+		}
 	}
 
 	public void RemoveSpawnedEnemies()

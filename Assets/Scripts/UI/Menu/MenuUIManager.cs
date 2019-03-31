@@ -13,7 +13,10 @@ public class MenuUIManager : MonoBehaviour, IManager
 
 	public void Cleanup()
 	{
-		StopAllCoroutines();
+		if (this != null)
+		{
+			StopAllCoroutines();
+		}
 	}
 
 	private void Awake()

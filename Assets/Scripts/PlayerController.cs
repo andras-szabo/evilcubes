@@ -16,7 +16,10 @@ public class PlayerController : MonoBehaviour, IManager
 
 	public void Cleanup()
 	{
-		OnPlayerDead = null;
+		if (this != null)
+		{
+			OnPlayerDead = null;
+		}
 	}
 
 	private void Awake()

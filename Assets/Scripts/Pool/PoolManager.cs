@@ -10,9 +10,12 @@ public class PoolManager : MonoWithCachedTransform, IManager
 
 	public void Cleanup()
 	{
-		_poolsByPrototypeID.Clear();
-		_workingQueue?.Clear();
-		_prototypeIDsByInstance.Clear();
+		if (this != null)
+		{
+			_poolsByPrototypeID.Clear();
+			_workingQueue?.Clear();
+			_prototypeIDsByInstance.Clear();
+		}
 	}
 
 	private void Awake()
