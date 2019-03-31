@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public enum CamType
 {
@@ -10,16 +8,27 @@ public enum CamType
 }
 
 [RequireComponent(typeof(Camera))]
-public class CameraManagerClient : MonoBehaviour
+public class CameraManagerClient : MonoWithCachedTransform
 {
 	public CamType camType;
+	public Camera Camera { get; private set; }
+
+	public Vector3 Position
+	{
+		get { return CachedTransform.position; }
+		set { CachedTransform.position = value; }
+	}
+
+	public bool CanShake { get; set; }
 
 	private void Start ()
 	{
-		var cam = GetComponent<Camera>();
-		if (cam != null)
+		Camera = GetComponent<Camera>();
+		if (Camera != null)
 		{
-			ManagerLocator.TryGet<CameraManager>().Register((int)camType, cam);
+			ManagerLocator.TryGet<CameraManager>().Register((int)camType, this); 
 		}
+
+		CanShake = true;
 	}
 }

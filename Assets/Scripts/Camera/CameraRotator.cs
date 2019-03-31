@@ -19,6 +19,8 @@ public class CameraRotator : MonoWithCachedTransform
 	public Transform firstPersonCamPositionMarker;
 	public Transform thirdPersonCamPositionMarker;
 
+	public CameraManagerClient camManagerClient;
+
 	private Coroutine _perspectiveSwitchRoutine;
 	private ViewPosition _currentViewPos;
 	private Coroutine _turnaroundRoutine;
@@ -35,6 +37,8 @@ public class CameraRotator : MonoWithCachedTransform
 	{
 		_isMouseInverted = SettingsManager.IsMouseInverted();
 		_mouseSensitivity = SettingsManager.MouseSensitivity();
+
+		camManagerClient.CanShake = _currentViewPos == ViewPosition.FirstPerson;
 
 		ManagerLocator.TryGet<SettingsManager>().OnSettingsChanged += HandleSettingsChanged;
 	}
@@ -98,6 +102,8 @@ public class CameraRotator : MonoWithCachedTransform
 		}
 
 		CachedTransform.localPosition = targetPosition;
+
+		camManagerClient.CanShake = newPosition == ViewPosition.FirstPerson;
 
 		_perspectiveSwitchRoutine = null;
 	}

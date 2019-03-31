@@ -5,7 +5,7 @@ using UnityEngine;
 public class CameraManager : MonoBehaviour, IManager, IShakeable
 {
 	[Range(0f, 1f)] public float shakeIntensityFactor;
-	private Dictionary<int, Camera> _camerasByID = new Dictionary<int, Camera>();
+	private Dictionary<int, CameraManagerClient> _camerasByID = new Dictionary<int, CameraManagerClient>();
 
 	int _shakingCameraCount;
 	bool _shakeCancelToken;
@@ -44,7 +44,7 @@ public class CameraManager : MonoBehaviour, IManager, IShakeable
 		_shakeCancelToken = true;
 	}
 
-	public void Register(int id, Camera camera)
+	public void Register(int id, CameraManagerClient camera)
 	{
 		if (!_camerasByID.ContainsKey(id))
 		{
@@ -54,11 +54,11 @@ public class CameraManager : MonoBehaviour, IManager, IShakeable
 
 	public Camera TryGetCamera(int camID)
 	{
-		Camera cam;
+		CameraManagerClient cam;
 
 		if (_camerasByID.TryGetValue(camID, out cam))
 		{
-			return cam;
+			return cam.Camera;
 		}
 
 		return null;
@@ -72,33 +72,33 @@ public class CameraManager : MonoBehaviour, IManager, IShakeable
 
 			foreach (var cam in _camerasByID.Values)
 			{
-				StartCoroutine(ShakeRoutine(cam.transform, intensity));
+				StartCoroutine(ShakeRoutine(cam, intensity));
 				_shakingCameraCount++;
 			}
 		}
 	}
 
-	private IEnumerator ShakeRoutine(Transform transform, float intensity)
+	private IEnumerator ShakeRoutine(CameraManagerClient cam, float intensity)
 	{
-		var startPos = transform.position;
+		var startPos = cam.Position;
 
 		var elapsed = 0f;
 		var duration = intensity * 0.02f;
 		intensity *= shakeIntensityFactor;
 
-		while (!_shakeCancelToken && elapsed < duration)
+		while (!_shakeCancelToken && cam.CanShake && elapsed < duration)
 		{
 			elapsed += Time.deltaTime;
 
 			var deltaX = Random.Range(-intensity, intensity);
 			var deltaY = Random.Range(-intensity, intensity);
 
-			transform.position = startPos + new Vector3(deltaX, deltaY);
+			cam.Position = startPos + new Vector3(deltaX, deltaY);
 
 			yield return null;
 		}
 
-		transform.position = startPos;
+		cam.Position = startPos;
 		_shakingCameraCount--;
 	}
 }

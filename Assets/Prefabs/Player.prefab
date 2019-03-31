@@ -377,6 +377,7 @@ MonoBehaviour:
   head: {fileID: 7176321280403479191}
   firstPersonCamPositionMarker: {fileID: 7176321279508117560}
   thirdPersonCamPositionMarker: {fileID: 7176321279543029623}
+  camManagerClient: {fileID: 7176321279833488840}
 --- !u!114 &7176321279833488840
 MonoBehaviour:
   m_ObjectHideFlags: 0
