@@ -10,6 +10,12 @@ public class CameraManager : MonoBehaviour, IManager, IShakeable
 	int _shakingCameraCount;
 	bool _shakeCancelToken;
 
+	public void Cleanup()
+	{
+		StopAllCoroutines();
+		_camerasByID.Clear();
+	}
+
 	private void Awake()
 	{
 		ManagerLocator.TryRegister<CameraManager>(this);

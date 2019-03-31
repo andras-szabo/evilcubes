@@ -14,6 +14,11 @@ public class PlayerController : MonoBehaviour, IManager
 
 	public bool Paused { get; set; }
 
+	public void Cleanup()
+	{
+		OnPlayerDead = null;
+	}
+
 	private void Awake()
 	{
 		ManagerLocator.TryRegister<PlayerController>(this);

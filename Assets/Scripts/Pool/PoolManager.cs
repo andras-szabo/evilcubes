@@ -8,6 +8,13 @@ public class PoolManager : MonoWithCachedTransform, IManager
 
 	private Dictionary<int, int> _prototypeIDsByInstance = new Dictionary<int, int>();
 
+	public void Cleanup()
+	{
+		_poolsByPrototypeID.Clear();
+		_workingQueue?.Clear();
+		_prototypeIDsByInstance.Clear();
+	}
+
 	private void Awake()
 	{
 		ManagerLocator.TryRegister<PoolManager>(this);

@@ -24,6 +24,11 @@ public class SettingsManager : IManager
 
 	public event Action<SettingsInfo> OnSettingsChanged;
 
+	public void Cleanup()
+	{
+		OnSettingsChanged = null;
+	}
+
 	public void SetSettings(bool isInverted, float sensitivity)
 	{
 		PlayerPrefs.SetInt(PPREF_KEY_INVERT_MOUSE, isInverted ? 1 : 0);

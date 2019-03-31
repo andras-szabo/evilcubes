@@ -153,6 +153,14 @@ public class SpawnManager : MonoBehaviour, IManager
 
 	public void Cleanup()
 	{
+		RemoveSpawnedEnemies();
+
+		OnEnemyFinishedSpawning = null;
+		OnEnemyRemoved = null;
+	}
+
+	public void RemoveSpawnedEnemies()
+	{
 		foreach (var spawnedEnemy in _spawnedEnemiesByUID.Values)
 		{
 			Destroy(spawnedEnemy.gameObject);

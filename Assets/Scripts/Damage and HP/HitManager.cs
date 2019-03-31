@@ -5,6 +5,11 @@ public class HitManager : IManager
 {
 	private Dictionary<int, IHittable> _collidablesByID = new Dictionary<int, IHittable>();
 
+	public void Cleanup()
+	{
+		_collidablesByID.Clear();
+	}
+
 	public void Register(GameObject gameObject, IHittable hittable)
 	{
 		if (gameObject != null)

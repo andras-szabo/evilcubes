@@ -23,7 +23,11 @@ public class ManagerLocator
 	{
 		if (_instance != null)
 		{
-			_instance._managers.Clear();
+			foreach (var manager in _instance._managers.Values)
+			{
+				manager.Cleanup();
+			}
+
 			_instance = null;
 		}
 	}
@@ -92,5 +96,5 @@ public class ManagerLocator
 
 public interface IManager
 {
-
+	void Cleanup();
 }

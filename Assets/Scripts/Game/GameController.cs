@@ -70,7 +70,7 @@ public class GameController : MonoBehaviour, IManager
 	public void StartNewGame()
 	{
 		_spawner.StopSpawning();
-		_spawner.Cleanup();
+		_spawner.RemoveSpawnedEnemies();
 		_spawner.Reset();
 
 		_gameModel = new GameModel();
@@ -106,14 +106,14 @@ public class GameController : MonoBehaviour, IManager
 	public void AbortGameServices()
 	{
 		_spawner.StopSpawning();
-		_spawner.Cleanup();
+		_spawner.RemoveSpawnedEnemies();
 		_spawner.Reset();
 
 		_player.enabled = false;
 		_hud.ShowHUD(false);
 	}
 
-	public void Teardown()
+	public void Cleanup()
 	{
 		_gameModel = null;
 
@@ -123,7 +123,8 @@ public class GameController : MonoBehaviour, IManager
 		OnLiveEnemyCountChanged = null;
 		OnDeadEnemyCountChanged = null;
 
-		ManagerLocator.Cleanup();
+		OnGameOver = null;
+		OnGameStart = null;
 	}
 
 	private void CacheDependencies()

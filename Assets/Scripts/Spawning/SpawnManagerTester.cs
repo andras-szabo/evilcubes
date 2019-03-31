@@ -32,7 +32,7 @@ public class SpawnManagerTester : MonoBehaviour
 			}
 
 			spawnManager.StopSpawning();
-			spawnManager.Cleanup();
+			spawnManager.RemoveSpawnedEnemies();
 			spawnManager.Reset();
 			
 			yield return null;

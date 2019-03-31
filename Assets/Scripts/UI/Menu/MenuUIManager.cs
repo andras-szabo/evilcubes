@@ -11,6 +11,11 @@ public class MenuUIManager : MonoBehaviour, IManager
 
 	public GameObject[] menuItems;
 
+	public void Cleanup()
+	{
+		StopAllCoroutines();
+	}
+
 	private void Awake()
 	{
 		ManagerLocator.TryRegister<MenuUIManager>(this);
@@ -149,8 +154,6 @@ public class MenuUIManager : MonoBehaviour, IManager
 
 	private void DoQuit()
 	{
-		ManagerLocator.TryGet<GameController>().Teardown();
-
 		if (Application.isEditor)
 		{
 #if UNITY_EDITOR

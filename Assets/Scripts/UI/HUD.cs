@@ -22,6 +22,13 @@ public class HUD : MonoBehaviour, IManager, IShakeable
 	private int _shakingHudElementCount;
 	private bool _shakeCancelToken;
 
+	public void Cleanup()
+	{
+		StopAllCoroutines();
+		_player = null;
+		_weaponState = null;
+	}
+
 	private void Awake()
 	{
 		ManagerLocator.TryRegister<HUD>(this);
