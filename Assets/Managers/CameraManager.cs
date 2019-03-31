@@ -8,15 +8,31 @@ public class CameraManager : MonoBehaviour, IManager, IShakeable
 	private Dictionary<int, Camera> _camerasByID = new Dictionary<int, Camera>();
 
 	int _shakingCameraCount;
+	bool _shakeCancelToken;
 
 	private void Awake()
 	{
 		ManagerLocator.TryRegister<CameraManager>(this);
 	}
 
+	private void Start()
+	{
+		ManagerLocator.TryGet<GameController>().OnGameOver += HandleGameOver;
+	}
+
 	private void OnDestroy()
 	{
 		_camerasByID.Clear();
+		var gc = ManagerLocator.TryGet<GameController>();
+		if (gc != null)
+		{
+			gc.OnGameOver -= HandleGameOver;
+		}
+	}
+
+	private void HandleGameOver(bool hasPlayerWon)
+	{
+		_shakeCancelToken = true;
 	}
 
 	public void Register(int id, Camera camera)
@@ -43,6 +59,8 @@ public class CameraManager : MonoBehaviour, IManager, IShakeable
 	{
 		if (_shakingCameraCount == 0 && shakeIntensityFactor > 0f)
 		{
+			_shakeCancelToken = false;
+
 			foreach (var cam in _camerasByID.Values)
 			{
 				StartCoroutine(ShakeRoutine(cam.transform, intensity));
@@ -59,7 +77,7 @@ public class CameraManager : MonoBehaviour, IManager, IShakeable
 		var duration = intensity * 0.02f;
 		intensity *= shakeIntensityFactor;
 
-		while (elapsed < duration)
+		while (!_shakeCancelToken && elapsed < duration)
 		{
 			elapsed += Time.deltaTime;
 

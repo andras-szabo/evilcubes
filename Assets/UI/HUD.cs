@@ -19,24 +19,24 @@ public class HUD : MonoBehaviour, IManager, IShakeable
 	private bool _isSetup;
 
 	private int _shakingHudElementCount;
+	private bool _shakeCancelToken;
 
 	private void Awake()
 	{
 		ManagerLocator.TryRegister<HUD>(this);
 	}
 
-	private IEnumerator Start()
+	private void Start()
 	{
-		while (_player == null)
-		{
-			_player = ManagerLocator.TryGet<PlayerController>();
-			if (_player == null)
-			{
-				yield return null;
-			}
-		}
+		_player = ManagerLocator.TryGet<PlayerController>();
+		ManagerLocator.TryGet<GameController>().OnGameOver += HandleGameOver;
 
 		Setup();
+	}
+
+	private void HandleGameOver(bool hasPlayerWon)
+	{
+		_shakeCancelToken = true;
 	}
 
 	private void Update()
@@ -54,6 +54,12 @@ public class HUD : MonoBehaviour, IManager, IShakeable
 			_player.weaponController.OnWeaponChanged -= HandleWeaponChanged;
 			_player.weaponController.OnDispersionChanged -= HandleDispersionChanged;
 		}
+
+		var gc = ManagerLocator.TryGet<GameController>();
+		if (gc != null)
+		{
+			gc.OnGameOver -= HandleGameOver;
+		}
 	}
 
 	#region Screen shake
@@ -61,6 +67,8 @@ public class HUD : MonoBehaviour, IManager, IShakeable
 	{
 		if (_shakingHudElementCount == 0)
 		{
+			_shakeCancelToken = false;
+
 			foreach (var hudElement in hudElements)
 			{
 				StartCoroutine(ShakeRoutine(hudElement, intensity));
@@ -75,7 +83,7 @@ public class HUD : MonoBehaviour, IManager, IShakeable
 
 		var elapsed = 0f;
 		var duration = intensity * 0.05f;
-		while (elapsed < duration)
+		while (!_shakeCancelToken && elapsed < duration)
 		{
 			elapsed += Time.deltaTime;
 

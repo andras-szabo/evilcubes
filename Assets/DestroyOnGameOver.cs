@@ -2,6 +2,8 @@
 
 public class DestroyOnGameOver : MonoBehaviour
 {
+	public PoolUser poolUser;
+
 	private void Start()
 	{
 		var gc = ManagerLocator.TryGet<GameController>();
@@ -13,7 +15,14 @@ public class DestroyOnGameOver : MonoBehaviour
 
 	private void HandleGameOver(bool hasPlayerWon)
 	{
-		Destroy(this.gameObject);
+		if (poolUser != null)
+		{
+			poolUser.Despawn();
+		}
+		else
+		{
+			Destroy(this.gameObject);
+		}
 	}
 
 	private void OnDestroy()

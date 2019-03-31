@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class HUDShakeTester : MonoBehaviour
 {
@@ -14,6 +12,13 @@ public class HUDShakeTester : MonoBehaviour
 			{
 				shakeable.Shake(intensity);
 			}
+
+			Invoke("MakePlayerDie", 0.1f);
 		}
+	}
+
+	private void MakePlayerDie()
+	{
+		ManagerLocator.TryGet<PlayerController>().HP.Hit(Vector3.zero, 200);
 	}
 }
