@@ -169,15 +169,6 @@ public class WeaponController : MonoWithCachedTransform
 		}
 	}
 
-	private void ShowBulletTrails()
-	{
-		foreach (var ray in _projectileRays)
-		{
-			var trail = _pool.Spawn<BulletTrail>(_activeConfig.bulletTrail, barrel.position, barrel.rotation, null);
-			trail.Setup(ray);
-		}
-	}
-
 	public void HandleTriggerLetGo()
 	{
 		if (_activeConfig.isAutomatic)
@@ -291,6 +282,16 @@ public class WeaponController : MonoWithCachedTransform
 		_activeWeaponState.currentDispersionDegrees = Mathf.Min(MAX_DISPERSION_DEGREE, 
 									_activeConfig.dispersionIncrementOverTime * _activeWeaponState.currentDispersionDegrees);
 		OnDispersionChanged?.Invoke(_activeWeaponState.currentDispersionDegrees);
+	}
+	
+	private void ShowBulletTrails()
+	{
+		foreach (var ray in _projectileRays)
+		{
+			var trail = _pool.Spawn<BulletTrail>(_activeConfig.bulletTrail, barrel.position, barrel.rotation, null);
+			var dir = (ray - CachedTransform.position).normalized;
+			trail.Setup(CachedTransform.position + dir * 5f);
+		}
 	}
 
 	private void OnDrawGizmos()

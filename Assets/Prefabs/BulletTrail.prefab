@@ -78,7 +78,7 @@ TrailRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Time: 0.5
+  m_Time: 0.2
   m_Parameters:
     serializedVersion: 2
     widthMultiplier: 1
@@ -86,8 +86,8 @@ TrailRenderer:
       serializedVersion: 2
       m_Curve:
       - serializedVersion: 3
-        time: 0.017688751
-        value: 0.00879097
+        time: 0.008255005
+        value: 0.04144478
         inSlope: 0
         outSlope: 0
         tangentMode: 0
@@ -137,7 +137,7 @@ TrailRenderer:
       m_NumAlphaKeys: 3
     numCornerVertices: 0
     numCapVertices: 0
-    alignment: 1
+    alignment: 0
     textureMode: 0
     generateLightingData: 0
   m_MinVertexDistance: 0.1

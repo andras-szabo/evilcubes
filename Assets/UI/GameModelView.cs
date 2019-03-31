@@ -10,12 +10,12 @@ public class GameModelView : MonoBehaviour
 
 	private void Start()
 	{
-		var gameModel = ManagerLocator.TryGet<GameController>().GameModel;
+		var gc = ManagerLocator.TryGet<GameController>();
 
-		gameModel.OnLiveEnemyCountChanged += HandleLiveEnemyCountChanged;
-		gameModel.OnDeadEnemyCountChanged += HandleDeadEnemyCountChanged;
-		gameModel.OnBulletsFiredCountChanged += HandleBulletsFiredCountChanged;
-		gameModel.OnBulletsHitCountChanged += HandleBulletsHitCountChanged;
+		gc.OnLiveEnemyCountChanged += HandleLiveEnemyCountChanged;
+		gc.OnDeadEnemyCountChanged += HandleDeadEnemyCountChanged;
+		gc.OnBulletsFiredCountChanged += HandleBulletsFiredCountChanged;
+		gc.OnBulletsHitCountChanged += HandleBulletsHitCountChanged;
 
 		HandleLiveEnemyCountChanged(0);
 		HandleDeadEnemyCountChanged(0);
@@ -26,11 +26,11 @@ public class GameModelView : MonoBehaviour
 	private void OnDestroy()
 	{
 		var gc = ManagerLocator.TryGet<GameController>();
-		if (gc != null && gc.GameModel != null)
+		if (gc != null)
 		{
-			gc.GameModel.OnLiveEnemyCountChanged -= HandleLiveEnemyCountChanged;
-			gc.GameModel.OnDeadEnemyCountChanged -= HandleDeadEnemyCountChanged;
-			gc.GameModel.OnBulletsFiredCountChanged -= HandleBulletsFiredCountChanged;
+			gc.OnLiveEnemyCountChanged -= HandleLiveEnemyCountChanged;
+			gc.OnDeadEnemyCountChanged -= HandleDeadEnemyCountChanged;
+			gc.OnBulletsFiredCountChanged -= HandleBulletsFiredCountChanged;
 		}
 	}
 

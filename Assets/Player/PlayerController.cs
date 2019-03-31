@@ -1,7 +1,10 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class PlayerController : MonoBehaviour, IManager
 {
+	public event Action OnPlayerDead;
+
 	public CameraRotator camRotator;
 	public WeaponController weaponController;
 	public HP HP;
@@ -9,20 +12,53 @@ public class PlayerController : MonoBehaviour, IManager
 	[Tooltip("When enabled, tapping 'W', 'A', or the right mouse button spins the player quickly around")]
 	public bool allowQuickTurnaround;
 
+	public bool Paused { get; set; }
+
 	private void Awake()
 	{
 		ManagerLocator.TryRegister<PlayerController>(this);
+		HP.OnHitPointsChanged += HandleHPChanged;
+	}
+
+	private void Start()
+	{
+		Setup();
 	}
 
 	private void Update()
 	{
-		ProcessWeaponInputs();
+		if (!Paused)
+		{
+			ProcessWeaponInputs();
+		}
 	}
 
 	private void LateUpdate()
 	{
-		ProcessCameraRotationInput();
-		ProcessCamPerspectiveSwitchInput();
+		if (!Paused)
+		{
+			ProcessCameraRotationInput();
+			ProcessCamPerspectiveSwitchInput();
+		}
+	}
+
+	private void OnDestroy()
+	{
+		HP.OnHitPointsChanged -= HandleHPChanged;
+	}
+
+	public void Setup()
+	{
+		Paused = false;
+		HP.Reset();
+	}
+
+	private void HandleHPChanged(HPInfo info)
+	{
+		if (info.current <= 0)
+		{
+			OnPlayerDead?.Invoke();
+		}
 	}
 
 	private void ProcessWeaponInputs()

@@ -12,6 +12,8 @@ public class HUD : MonoBehaviour, IManager
 	public RectTransform crosshair;
 	public RearViewMirror rearViewMirror;
 
+	public GameObject[] hudElements;
+
 	private PlayerController _player;
 	private WeaponController.WeaponState _weaponState;
 	private bool _isSetup;
@@ -49,6 +51,23 @@ public class HUD : MonoBehaviour, IManager
 		{
 			_player.weaponController.OnWeaponChanged -= HandleWeaponChanged;
 			_player.weaponController.OnDispersionChanged -= HandleDispersionChanged;
+		}
+	}
+
+	public void ShowHUD(bool state)
+	{
+		foreach (var hudElement in hudElements)
+		{
+			hudElement.SetActive(state);
+		}
+
+		if (state)
+		{
+			rearViewMirror.Setup();
+		}
+		else
+		{
+			rearViewMirror.DisableCameras();
 		}
 	}
 

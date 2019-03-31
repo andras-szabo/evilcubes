@@ -3,8 +3,8 @@
 [RequireComponent(typeof(RectTransform))]
 public class RearViewMirror : MonoBehaviour 
 {
-	public Camera rearViewCamera;
-	public Camera topDownViewCamera;
+	private Camera rearViewCamera;
+	private Camera topDownViewCamera;
 
 	private RectTransform _rt;
 	private RectTransform CachedRectTransform
@@ -15,32 +15,35 @@ public class RearViewMirror : MonoBehaviour
 		}
 	}
 
-	private void Awake()
-	{
-		if (rearViewCamera != null)
-		{
-			rearViewCamera.enabled = false;
-		}
-
-		if (topDownViewCamera != null)
-		{
-			topDownViewCamera.enabled = false;
-		}
-	}
-
 	private void Start()
 	{
+		rearViewCamera = GameObject.FindGameObjectWithTag("RearViewCam").GetComponent<Camera>();
+		topDownViewCamera = GameObject.FindGameObjectWithTag("TopDownViewCam").GetComponent<Camera>();
+
 		var pixelRect = GetPixelRectForCamera();
 		if (rearViewCamera != null)
 		{
 			rearViewCamera.pixelRect = pixelRect;
-			rearViewCamera.enabled = true;
 		}
 
 		if (topDownViewCamera != null)
 		{
 			topDownViewCamera.pixelRect = pixelRect;
 		}
+
+		Setup();
+	}
+
+	public void Setup()
+	{
+		if (rearViewCamera != null) { rearViewCamera.enabled = true; }
+		if (topDownViewCamera != null) { topDownViewCamera.enabled = false; }
+	}
+
+	public void DisableCameras()
+	{
+		if (rearViewCamera != null) { rearViewCamera.enabled = false; }
+		if (topDownViewCamera != null) { topDownViewCamera.enabled = false; }
 	}
 
 	public void ToggleRearViewCamera()

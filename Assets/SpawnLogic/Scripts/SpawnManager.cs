@@ -155,7 +155,7 @@ public class SpawnManager : MonoBehaviour, IManager
 	{
 		foreach (var spawnedEnemy in _spawnedEnemiesByUID.Values)
 		{
-			Destroy(spawnedEnemy);
+			Destroy(spawnedEnemy.gameObject);
 		}
 
 		_spawnedEnemiesByUID.Clear();

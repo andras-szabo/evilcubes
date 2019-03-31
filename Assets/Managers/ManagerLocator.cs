@@ -16,8 +16,11 @@ public class ManagerLocator
 
 	public static void Cleanup()
 	{
-		_instance._managers.Clear();
-		_instance = null;
+		if (_instance != null)
+		{
+			_instance._managers.Clear();
+			_instance = null;
+		}
 	}
 
 	private static ManagerLocator Instance

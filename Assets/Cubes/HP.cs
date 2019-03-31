@@ -30,6 +30,13 @@ public class HP : MonoBehaviour, IHittable
 		_previousHP = hitPoints;
 	}
 
+	public void Reset()
+	{
+		_previousHP = hitPoints;
+		hitPoints = _startingHP;
+		OnHitPointsChanged?.Invoke(GetHPInfo());
+	}
+
 	public void SetStartingHP(int hp)
 	{
 		hitPoints = hp;
