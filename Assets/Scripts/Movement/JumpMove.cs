@@ -42,7 +42,11 @@ public class JumpMove : AMove
 		var endPoint = _cachedTransform.position + new Vector3(_initialVelocity.x * _jumpDuration, 0f, _initialVelocity.z * _jumpDuration);
 		_previousRemainingSectionCount = 0;
 
-		while (elapsedTime < _jumpDuration)
+		var meshRotationAxis = _cachedTransform.right;
+		var startMeshRotation = _meshToRotate.rotation;
+		var fullAngle = _jumpForward ? 90f : -90f;
+
+		while (elapsedTime <= _jumpDuration)
 		{
 			elapsedTime += Time.deltaTime;
 
@@ -51,10 +55,13 @@ public class JumpMove : AMove
 			var dz = _initialVelocity.z * elapsedTime;
 
 			_cachedTransform.position = startingPoint + new Vector3(dx, dy, dz);
-			_meshToRotate.localRotation = Quaternion.Euler(90f * (_jumpForward ? 1f : -1f) * (elapsedTime / _jumpDuration), 0f, 0f);
+			_meshToRotate.rotation = Quaternion.AngleAxis(fullAngle * (elapsedTime / _jumpDuration), meshRotationAxis) * startMeshRotation;
+
 			UpdatePath(elapsedTime);
 			yield return null;
 		}
+
+		_meshToRotate.rotation = Quaternion.AngleAxis(fullAngle, meshRotationAxis) * startMeshRotation;
 
 		_cachedTransform.position = endPoint;
 		_pathFinder.Path = null;
