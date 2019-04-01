@@ -14,4 +14,4 @@ MonoBehaviour:
   m_Name: GameSpawnConfig
   m_EditorClassIdentifier: 
   waves:
-  - {fileID: 11400000, guid: 159fd7da2368dd042b10a7a734bd894c, type: 2}
+  - {fileID: 11400000, guid: 9c3a70dd209257e44a2f423a610a5b14, type: 2}
