@@ -11,9 +11,9 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_GeneratorAsset: {fileID: 0}
   m_Script: {fileID: 11500000, guid: 277ada0548dfdc14785482a1f3daa61a, type: 3}
-  m_Name: TestWave
+  m_Name: GameWaveConfig
   m_EditorClassIdentifier: 
-  id: Just a test
+  id: Wave 01
   spawnIntervalSeconds: 0.1
   maxLiveCubeCount: 32
   spawnChanceSimple: 1
