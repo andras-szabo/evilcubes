@@ -252,7 +252,7 @@ public class WeaponController : MonoWithCachedTransform
 												   layerMask: _enemyLayerMask);
 			if (hitCount > 0)
 			{
-				ProcessHits(hitCount);
+				ProcessHits(hitCount, _hits);
 				bulletsHit += 1;
 			}
 		}
@@ -276,13 +276,22 @@ public class WeaponController : MonoWithCachedTransform
 		}
 	}
 
-	private void ProcessHits(int hitCount)
+	private void ProcessHits(int hitCount, RaycastHit[] hits)
 	{
 		_hitsByDistance.Clear();
 
-		for (int i = 0; i < hitCount; ++i)
+		for (int i = 0; i < hitCount && hitCount < hits.Length; ++i)
 		{
-			_hitsByDistance.Add(_hits[i].distance, _hits[i]);
+			try
+			{
+				_hitsByDistance.Add(hits[i].distance, hits[i]);
+			}
+			catch (ArgumentException)
+			{
+				// Technically it's possible that two hits occur at the same exact
+				// distance, which yields an ArgumentException. I don't try to
+				// resolve this, just ignore the second hit.
+			}
 		}
 
 		var damage = _activeConfig.damagePerProjectile;
