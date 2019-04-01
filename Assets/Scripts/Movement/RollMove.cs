@@ -53,7 +53,7 @@ public class RollMove : AMove
 			rollAngle *= -1f;
 		}
 
-		var matrix = MatrixToRotateAboutAxisByAngles(axisToRotateAround, rollAngle);
+		var rotationPerUpdate = Quaternion.AngleAxis(rollAngle, axisToRotateAround);
 		var anglesRotated = 0f;
 		var elapsed = 0f;
 		var timeStep = Time.fixedDeltaTime;
@@ -68,13 +68,13 @@ public class RollMove : AMove
 		{
 			elapsed += Time.deltaTime;
 
-			while (elapsed > timeStep && Mathf.Abs(anglesRotated) < 90f)
+			while (elapsed >= timeStep && Mathf.Abs(anglesRotated) < 90f)
 			{
 				elapsed -= timeStep;
 
-				var delta = _cachedTransform.position - fromEdgeToCentre;
-				fromEdgeToCentre = matrix.MultiplyPoint3x4(fromEdgeToCentre);
-				_cachedTransform.position = fromEdgeToCentre + delta;
+				var worldPositionDelta = _cachedTransform.position - fromEdgeToCentre;
+				fromEdgeToCentre = rotationPerUpdate * fromEdgeToCentre;
+				_cachedTransform.position = fromEdgeToCentre + worldPositionDelta;
 				anglesRotated += rollAngle;
 
 				if (Mathf.Abs(anglesRotated) > 90f)
@@ -141,19 +141,5 @@ public class RollMove : AMove
 
 		_plannedPath[0] = target;
 		return _plannedPath;
-	}
-
-	private Matrix4x4 MatrixToRotateAboutAxisByAngles(Vector3 n, float angle)
-	{
-		var angleInRadians = angle * Mathf.PI / 180f;
-		var cosa = Mathf.Cos(angleInRadians);
-		var sina = Mathf.Sin(angleInRadians);
-
-		var col1 = new Vector4(n.x * n.x * (1f - cosa) + cosa, n.x * n.y * (1f - cosa) + n.z * sina, n.x * n.z * (1f - cosa) - n.y * sina, 0f);
-		var col2 = new Vector4(n.x * n.y * (1f - cosa) - n.z * sina, n.y * n.y * (1f - cosa) + cosa, n.y * n.z * (1f - cosa) + n.x * sina, 0f);
-		var col3 = new Vector4(n.x * n.z * (1f - cosa) + n.y * sina, n.y * n.z * (1f - cosa) - n.x * sina, n.z * n.z * (1f - cosa) + cosa, 0f);
-		var col4 = new Vector4(0f, 0f, 0f, 1f);
-
-		return new Matrix4x4(col1, col2, col3, col4);
 	}
 }
